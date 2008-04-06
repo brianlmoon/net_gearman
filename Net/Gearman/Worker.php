@@ -79,6 +79,15 @@ class Net_Gearman_Worker
     private $retry_conn = array();
 
     /**
+     * Pool of worker abilities
+     *
+     * @access      private
+     * @var         array       $conn
+     */
+    private $abilities = array();
+
+    
+    /**
      * Callbacks registered for this worker
      *
      * @access      private
@@ -142,7 +151,9 @@ class Net_Gearman_Worker
             $params['timeout'] = $timeout;
             $call = 'can_do_timeout';
         }
-
+        
+        $this->abilities[$ability] = $timeout;
+        
         foreach ($this->conn as $conn) {
             Net_Gearman_Connection::send($conn, $call, $params);
         }
@@ -193,15 +204,23 @@ class Net_Gearman_Worker
             }
 
             $currentTime = time();
+            $retryChange = false;
             foreach ($this->retry_conn as $s => $lastTry) {
               if ($lastTry+$retryTime < $currentTime) {
                 $conn = Net_Gearman_Connection::connect($s);
                 if ($conn !== false) {
                   $this->conn[(int)$conn] = $conn;
+                  $retryChange = true;
                   unset($this->retry_conn[$s]);
                 } else {
                   $this->retry_conn[$s] = $currentTime;
                 }
+              }
+            }
+            if ($retryChange === true) {
+              // broadcast all abilities to all servers
+              foreach ($this->abilities as $ability => $timeout) {
+                $this->addAbility($ability,$timeout);
               }
             }
             if (call_user_func($monitor, $idle, $lastJob) == true) {
