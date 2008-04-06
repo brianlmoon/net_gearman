@@ -90,6 +90,13 @@ class Net_Gearman_Set implements Iterator
     public $handles = array();
 
     /**
+     * Callback registered for set
+     *
+     * @access      private
+     */
+    private $callback = NULL;
+
+    /**
      * Constructor
      *
      * @access      public
@@ -150,10 +157,33 @@ class Net_Gearman_Set implements Iterator
     public function finished()
     {
         if ($this->tasksCount == 0) {
-            return true;
+          if (isset($this->callback)) {
+            foreach($this->tasks as $task) {
+              $results[] = $task->result;
+            }              
+            call_user_func($this->callback, $results);
+          }
+          return true;
         }
 
         return false;
+    }
+
+    /**
+     * Attach a callback to this set   
+     * 
+     * @access      public
+     * @param       callback    $callback       A valid PHP callback
+     * @return      void
+     * @throws      Net_Gearman_Exception
+     */
+    public function attachCallback($callback) 
+    {
+        if (!is_callable($callback)) {
+            throw new Net_Gearman_Exception('Invalid callback specified'); 
+        } 
+
+        $this->callback = $callback;
     }
 
     /**

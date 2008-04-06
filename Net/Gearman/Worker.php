@@ -71,6 +71,14 @@ class Net_Gearman_Worker
     private $conn = array();
 
     /**
+     * Pool of retry connections
+     *
+     * @access      private
+     * @var         array       $conn
+     */
+    private $retry_conn = array();
+
+    /**
      * Callbacks registered for this worker
      *
      * @access      private
@@ -107,7 +115,15 @@ class Net_Gearman_Worker
 
         foreach ($servers as $s) {
             $conn = Net_Gearman_Connection::connect($s);
-            $this->conn[(int)$conn] = $conn;
+            if ($conn === false) {
+              $this->retry_conn[$s] = time();
+            } else {
+              $this->conn[(int)$conn] = $conn;
+            }
+        }
+
+        if (empty($this->conn)) {
+          throw new Net_Gearman_Exception("Couldn't connect to any available servers");
         }
     }
 
@@ -154,6 +170,7 @@ class Net_Gearman_Worker
         $write = $except = null;
         $working = true;
         $lastJob = time();
+        $retryTime = 5;
         while ($working) {
             $sleep = true;
             foreach ($this->conn as $socket) {
@@ -163,18 +180,30 @@ class Net_Gearman_Worker
                     $sleep = false;
                 }
             }
-
             $idle = false;
             if ($sleep) {
                 foreach ($this->conn as $socket) {
                     Net_Gearman_Connection::send($socket, 'pre_sleep');
                 }
-
                 $read = $this->conn;
                 socket_select($read, $write, $except, 30);
+                $errorcode = socket_last_error();
+                $errormsg = socket_strerror($errorcode);
                 $idle = (count($read) == 0);
             }
 
+            $currentTime = time();
+            foreach ($this->retry_conn as $s => $lastTry) {
+              if ($lastTry+$retryTime < $currentTime) {
+                $conn = Net_Gearman_Connection::connect($s);
+                if ($conn !== false) {
+                  $this->conn[(int)$conn] = $conn;
+                  unset($this->retry_conn[$s]);
+                } else {
+                  $this->retry_conn[$s] = $currentTime;
+                }
+              }
+            }
             if (call_user_func($monitor, $idle, $lastJob) == true) {
                 $working = false;
             }

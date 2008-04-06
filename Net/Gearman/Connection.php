@@ -126,13 +126,16 @@ abstract class Net_Gearman_Connection
         do {
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
             @socket_connect($socket, $host, $port);
+            $errorcode = socket_last_error($socket);
+            $errormsg = socket_strerror($errorcode);
+            
             socket_set_nonblock($socket);
             socket_set_option($socket, SOL_TCP, 1, 1);
             $timeLeft = ((microtime(true) - $start) * 1000);
         } while (!is_resource($socket) && $timeLeft < $timeout);
 
-        if (!is_resource($socket)) {
-            throw new Net_Gearman_Exception('Could not connect to ' . $host . ':' . $port);
+        if ($errorcode == 111) {
+          return false;
         }
 
         self::$waiting[(int)$socket] = array();
@@ -172,7 +175,7 @@ abstract class Net_Gearman_Connection
         $d = implode("\x00", $data);
 
         $cmd = "\0REQ" . pack("NN", self::$commands[$command][0], mb_strlen($d, '8bit')) . $d;
-        $check = socket_write($socket, $cmd, mb_strlen($cmd, '8bit'));
+        $check = @socket_write($socket, $cmd, mb_strlen($cmd, '8bit'));
         if ($check === false || $check < mb_strlen($cmd, '8bit')) {
             throw new Net_Gearman_Exception('Could not write command to socket');
         }
@@ -190,6 +193,7 @@ abstract class Net_Gearman_Connection
     static public function read($socket)
     {
         $header = socket_read($socket, 12);
+        
         if (mb_strlen($header, '8bit') == 0) {
             return array();
         }
