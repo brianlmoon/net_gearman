@@ -99,6 +99,17 @@ abstract class Net_Gearman_Connection
     static public $waiting = array();
 
     /**
+     * Is PHP's multibyte overload turned on?
+     *
+     *
+     * @access      public
+     * @var         integer           $multiByteSupport
+     * @static 
+     */
+    static public $multiByteSupport = NULL;
+
+
+    /**
      * Connect to Gearman
      *
      * Opens the socket to the Gearman Job server. It throws an exception if
@@ -174,9 +185,9 @@ abstract class Net_Gearman_Connection
 
         $d = implode("\x00", $data);
 
-        $cmd = "\0REQ" . pack("NN", self::$commands[$command][0], mb_strlen($d, '8bit')) . $d;
-        $check = @socket_write($socket, $cmd, mb_strlen($cmd, '8bit'));
-        if ($check === false || $check < mb_strlen($cmd, '8bit')) {
+        $cmd = "\0REQ" . pack("NN", self::$commands[$command][0], self::stringLength($d)) . $d;
+        $check = @socket_write($socket, $cmd, self::stringLength($cmd));
+        if ($check === false || $check < self::stringLength($cmd)) {
             throw new Net_Gearman_Exception('Could not write command to socket');
         }
     }
@@ -192,13 +203,16 @@ abstract class Net_Gearman_Connection
      */
     static public function read($socket)
     {
-        $header = socket_read($socket, 12);
-        
-        if (mb_strlen($header, '8bit') == 0) {
-            return array();
+        $header = '';
+        while (strlen($header) < 12) {
+          $header .= socket_read($socket, 12 - strlen($header));
         }
 
-        $resp = unpack('a4magic/Ntype/Nlen', $header);
+        if (self::stringLength($header) == 0) {
+            return array();
+        }
+        $resp = @unpack('a4magic/Ntype/Nlen', $header);
+          
         if (!count($resp) == 3) {
             throw new Net_Gearman_Exception('Received an invalid response');
         }
@@ -206,14 +220,13 @@ abstract class Net_Gearman_Connection
         if (!isset(self::$magic[$resp['type']])) {
             throw new Net_Gearman_Exception('Invalid response magic returned: ' . $resp['type']);
         }
-
+        
         $return = array();
         if ($resp['len'] > 0) {
             $data = '';
-            do {
-                $data .= socket_read($socket, $resp['len']);
-                $diff = ($resp['len'] - mb_strlen($data, '8bit'));
-            } while ($diff > 0);
+            while(strlen($data) < $resp['len']) {
+              $data .= socket_read($socket, $resp['len'] - strlen($data));
+            }
 
             $d = explode("\x00", $data);
             foreach (self::$magic[$resp['type']][1] as $i => $a) {
@@ -223,7 +236,7 @@ abstract class Net_Gearman_Connection
 
         $function = self::$magic[$resp['type']][0];
         if ($function == 'error') {
-            if (!mb_strlen($return['err_text'], '8bit')) {
+            if (!self::stringLength($return['err_text'])) {
                 $return['err_text'] = 'Unknown error; see error code.';
             }
 
@@ -294,6 +307,19 @@ abstract class Net_Gearman_Connection
         return (is_null($conn) !== true &&
                 is_resource($conn) === true && 
                 strtolower(get_resource_type($conn)) == 'socket');
+    }
+    /**
+     * Determine if we should use mb_strlen or stock strlen
+     *
+     * @access      public
+     * @return      integer     Size of string
+     */
+    static public function stringLength($value)
+    {
+      if(self::$multiByteSupport === NULL) {
+        self::$multiByteSupport = ini_get("mbstring.func_overload");
+      }
+      return (self::$multiByteSupport == 1) ? mb_strlen($value,'8bit') : strlen($value);
     }
 }
 

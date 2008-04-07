@@ -198,8 +198,6 @@ class Net_Gearman_Worker
                 }
                 $read = $this->conn;
                 socket_select($read, $write, $except, 30);
-                $errorcode = socket_last_error();
-                $errormsg = socket_strerror($errorcode);
                 $idle = (count($read) == 0);
             }
 
@@ -261,7 +259,7 @@ class Net_Gearman_Worker
         $handle = $resp['data']['handle'];
         $arg = array();
         if (isset($resp['data']['arg']) && 
-            mb_strlen($resp['data']['arg'], '8bit')) {
+            Net_Gearman_Connection::stringLength($resp['data']['arg'])) {
             $arg = unserialize($resp['data']['arg']);
         }
 
