@@ -35,7 +35,7 @@
     </stability>
     <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
     <notes><![CDATA[
-        * Allow either a string or an array for the $servers argument in Net_Gearman_Worker::__construct() and Net_Gearman_Client::__construct()
+        * Added Net_Gearman_Manager for collecting stats and managing Gearmand
     ]]></notes>
     <contents>
         <dir name="/">
@@ -48,6 +48,8 @@
                     <file name="Exception.php"
                           role="php" />
                     <file name="Job.php"
+                          role="php" />
+                    <file name="Manager.php"
                           role="php" />
                     <file name="Set.php"
                           role="php" />
