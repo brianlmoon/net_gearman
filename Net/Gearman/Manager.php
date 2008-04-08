@@ -282,9 +282,9 @@ class Net_Gearman_Manager
      * @return void
      * @throws Net_Gearman_Exception
      */
-    protected checkForError($data)
+    protected function checkForError($data)
     {
-        $data = trim($data);
+        $data = trim($data); 
         if (preg_match('/^ERR/', $data)) {
             list(, $code, $msg) = explode(' ', $data);
             throw new Net_Gearman_Exception($msg, urldecode($code));

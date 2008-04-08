@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Job creation class for Net_Gearman
+ * Interface for Danga's Gearman job scheduling system
  *
  * PHP version 5.1.0+
  *
@@ -11,15 +11,15 @@
  * a copy of the New BSD License and are unable to obtain it through the web, 
  * please send a note to license@php.net so we can mail you a copy immediately.
  *
- * @category    Net
- * @package     Net_Gearman
- * @author      Joe Stump <joe@joestump.net> 
- * @copyright   2007 Digg.com, Inc.
- * @license     http://www.opensource.org/licenses/bsd-license.php 
- * @version     CVS: $Id:$
- * @link        http://pear.php.net/package/Net_Gearman
- * @link        http://www.danga.com/gearman/
- */ 
+ * @category  Net
+ * @package   Net_Gearman
+ * @author    Joe Stump <joe@joestump.net> 
+ * @copyright 2007-2008 Digg.com, Inc.
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
+ * @version   CVS: $Id$
+ * @link      http://pear.php.net/package/Net_Gearman
+ * @link      http://www.danga.com/gearman/
+ */
 
 require_once 'Net/Gearman/Job/Common.php';
 require_once 'Net/Gearman/Exception.php';
@@ -33,13 +33,15 @@ if (!defined('NET_GEARMAN_JOB_PATH')) {
 /**
  * Job creation class
  *
- * @category    Net
- * @package     Net_Gearman
- * @author      Joe Stump <joe@joestump.net> 
- * @link        http://www.danga.com/gearman/
- * @see         Net_Gearman_Job_Common, Net_Gearman_Worker
+ * @category  Net
+ * @package   Net_Gearman
+ * @author    Joe Stump <joe@joestump.net> 
+ * @copyright 2007-2008 Digg.com, Inc.
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
+ * @link      http://www.danga.com/gearman/
+ * @see       Net_Gearman_Job_Common, Net_Gearman_Worker
  */
-abstract class Net_Gearman_Job 
+abstract class Net_Gearman_Job
 {
     /**
      * Create an instance of a job
@@ -49,17 +51,18 @@ abstract class Net_Gearman_Job
      * which made the request for the job so that the job can communicate its
      * status from there on out.
      *
-     * @access      public
-     * @param       string      $job        Name of job (func in Gearman terms)
-     * @param       object      $conn       Instance of Net_Gearman_Connection
-     * @param       string      $handle     Gearman job handle of job
-     * @see         Net_Gearman_Job_Common
-     * @static
+     * @param string $job    Name of job (func in Gearman terms)
+     * @param object $conn   Instance of Net_Gearman_Connection
+     * @param string $handle Gearman job handle of job
+     * 
+     * @return object Instance of Net_Gearman_Job_Common child
+     * @see Net_Gearman_Job_Common
+     * @throws Net_Gearman_Exception
      */
     static public function factory($job, $conn, $handle)
     {
         $file = NET_GEARMAN_JOB_PATH . '/' . $job . '.php';
-        require_once $file;
+        include_once $file;
         $class = 'Net_Gearman_Job_' . $job;
         if (!class_exists($class)) {
             throw new Net_Gearman_Job_Exception('Invalid Job class');
