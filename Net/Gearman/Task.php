@@ -112,7 +112,7 @@ class Net_Gearman_Task
      * @see Net_Gearman_Task::status()
      * @see Net_Gearman_Task::fail()
      */
-    private $callback = array(
+    protected $callback = array(
         self::TASK_COMPLETE => array(),
         self::TASK_FAIL     => array(),
         self::TASK_STATUS   => array()

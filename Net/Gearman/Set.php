@@ -93,7 +93,7 @@ class Net_Gearman_Set implements Iterator
      *
      * @var mixed $callback
      */
-    private $callback = null;
+    protected $callback = null;
 
     /**
      * Constructor
