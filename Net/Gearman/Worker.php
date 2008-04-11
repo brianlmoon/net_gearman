@@ -129,11 +129,11 @@ class Net_Gearman_Worker
         }
 
         foreach ($servers as $s) {
-            $conn = Net_Gearman_Connection::connect($s);
-            if ($conn === false) {
+            try {
+                $conn = Net_Gearman_Connection::connect($s);   
+                $this->conn[$s] = $conn;             
+            } catch (Net_Gearman_Exception $e) {
                 $this->retryConn[$s] = time();
-            } else {
-                $this->conn[(int)$conn] = $conn;
             }
         }
 
@@ -198,8 +198,15 @@ class Net_Gearman_Worker
 
         while ($working) {
             $sleep = true;
-            foreach ($this->conn as $socket) {
-                $worked = $this->doWork($socket);
+            $currentTime = time();
+            
+            foreach ($this->conn as $server => $socket) {
+                try {
+                    $worked = $this->doWork($socket);
+                } catch (Net_Gearman_Exception $e) {
+                    unset($this->conn[$server]);
+                    $this->retryConn[$server] = $currentTime;
+                }
                 if ($worked) {
                     $lastJob = time();
                     $sleep   = false;
@@ -207,31 +214,35 @@ class Net_Gearman_Worker
             }
 
             $idle = false;
-            if ($sleep) {
+            if ($sleep && count($this->conn)) {
                 foreach ($this->conn as $socket) {
                     Net_Gearman_Connection::send($socket, 'pre_sleep');
                 }
 
                 $read = $this->conn;
-                socket_select($read, $write, $except, 30);
+                socket_select($read, $write, $except, 1);
                 $idle = (count($read) == 0);
             }
 
-            $currentTime = time();
             $retryChange = false;
             foreach ($this->retryConn as $s => $lastTry) {
                 if (($lastTry + $retryTime) < $currentTime) {
-                    $conn = Net_Gearman_Connection::connect($s);
-                    if ($conn !== false) {
-                        $this->conn[(int)$conn] = $conn;
+                    try {
+                        $conn = Net_Gearman_Connection::connect($s);
+                        $this->conn[$s]         = $conn;
                         $retryChange            = true;
                         unset($this->retryConn[$s]);
-                    } else {
+                    } catch (Net_Gearman_Exception $e) {
                         $this->retryConn[$s] = $currentTime;
                     }
                 }
             }
-
+            
+            if (count($this->conn) == 0) {
+                // sleep to avoid wasted cpu cycles if no connections to block on using socket_select
+                sleep(1);
+            }
+            
             if ($retryChange === true) {
                 // broadcast all abilities to all servers
                 foreach ($this->abilities as $ability => $timeout) {

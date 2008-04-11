@@ -137,16 +137,15 @@ abstract class Net_Gearman_Connection
         do {
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
             @socket_connect($socket, $host, $port);
-            $errorcode = socket_last_error($socket);
-            $errormsg  = socket_strerror($errorcode);
+            $errorCode = socket_last_error($socket);
             
             socket_set_nonblock($socket);
             socket_set_option($socket, SOL_TCP, 1, 1);
             $timeLeft = ((microtime(true) - $start) * 1000);
         } while (!is_resource($socket) && $timeLeft < $timeout);
 
-        if ($errorcode == 111) {
-            return false;
+        if ($errorCode == 111) {
+            throw new Net_Gearman_Exception("Can't connect to server");
         }
 
         self::$waiting[(int)$socket] = array();
@@ -208,10 +207,15 @@ abstract class Net_Gearman_Connection
     static public function read($socket)
     {
         $header = '';
-        while (self::stringLength($header) < 12) {
-            $header .= socket_read($socket, 12 - self::stringLength($header));
-        }
-
+        do {
+            $buf = socket_read($socket, 12 - self::stringLength($header));
+            $header .= $buf;
+        } while ($buf !== FALSE && $buf !== '' && self::stringLength($header) < 12);
+        
+        if ($buf === '') {
+            throw new Net_Gearman_Exception("Connection was reset");
+        }        
+        
         if (self::stringLength($header) == 0) {
             return array();
         }
