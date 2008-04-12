@@ -35,8 +35,10 @@
     </stability>
     <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
     <notes><![CDATA[
+        * Fixed a bug where Net_Gearman would munge large data results
         * Added Net_Gearman_Manager for collecting stats and managing Gearmand
         * Added Net_Gearman_Connection::stringLength() for detecting mbstring
+        * Added reconnection support to Net_Gearman_Worker so workers don't die when the Gearman server disappears sporatically
         * Cleaned up the code to satisfy phpcs
         * Made all private functions/member variables protected
     ]]></notes>
