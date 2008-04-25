@@ -24,10 +24,10 @@
         <email>cg@chrisgoffinet.com</email>
         <active>yes</active>
     </lead>
-    <date>2008-04-05</date>
+    <date>2008-04-25</date>
     <version>
-        <release>0.0.9</release>
-        <api>0.0.9</api>
+        <release>0.1.0</release>
+        <api>0.1.0</api>
     </version>
     <stability>
         <release>alpha</release>
@@ -35,12 +35,10 @@
     </stability>
     <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
     <notes><![CDATA[
-        * Fixed a bug where Net_Gearman would munge large data results
-        * Added Net_Gearman_Manager for collecting stats and managing Gearmand
-        * Added Net_Gearman_Connection::stringLength() for detecting mbstring
-        * Added reconnection support to Net_Gearman_Worker so workers don't die when the Gearman server disappears sporatically
-        * Cleaned up the code to satisfy phpcs
-        * Made all private functions/member variables protected
+        * Changed Net_Gearman_Connection so it cannot be instantiated
+        * Cleaned up documentation
+        * Moved magic initialization into Net_Gearman_Connection::connect()
+        * Fixed bug in port detection in Net_Gearman_Manager
     ]]></notes>
     <contents>
         <dir name="/">
@@ -107,6 +105,76 @@
     </dependencies>
     <phprelease />
     <changelog>
+        <release>
+            <date>2008-04-05</date>
+            <version>
+                <release>0.0.9</release>
+                <api>0.0.9</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
+            <notes><![CDATA[
+                * Fixed a bug where Net_Gearman would munge large data results
+                * Added Net_Gearman_Manager for collecting stats and managing Gearmand
+                * Added Net_Gearman_Connection::stringLength() for detecting mbstring
+                * Added reconnection support to Net_Gearman_Worker so workers don't die when the Gearman server disappears sporatically
+                * Cleaned up the code to satisfy phpcs
+                * Made all private functions/member variables protected
+            ]]></notes>
+            <contents>
+                <dir name="/">
+                    <dir name="Net">
+                        <dir name="Gearman">
+                            <file name="Client.php"
+                                  role="php" />
+                            <file name="Connection.php"
+                                  role="php" />
+                            <file name="Exception.php"
+                                  role="php" />
+                            <file name="Job.php"
+                                  role="php" />
+                            <file name="Manager.php"
+                                  role="php" />
+                            <file name="Set.php"
+                                  role="php" />
+                            <file name="Task.php"
+                                  role="php" />
+                            <file name="Worker.php"
+                                  role="php" />
+                            <dir name="Job">
+                                <file name="Common.php"
+                                      role="php" />
+                                <file name="Exception.php"
+                                      role="php" />
+                            </dir>
+                        </dir>
+                    </dir>
+                    <dir name="examples" role="doc" baseinstalldir="doc/Net_Gearman">
+                        <file name="SQL.php"
+                              role="doc" />
+                        <file name="Sum.php"
+                              role="doc" />
+                        <file name="tasks.php"
+                              role="doc" />
+                        <file name="worker.php"
+                              role="doc" />
+                    </dir>
+                    <dir name="tests" role="test">
+                        <file name="001-echo_req.phpt"
+                              role="test" /> 
+                        <file name="010-client-call.phpt"
+                              role="test" /> 
+                        <file name="012-client-runSet.phpt"
+                              role="test" /> 
+                        <file name="tests-config.php"
+                              role="test" /> 
+                    </dir>
+                </dir>
+            </contents>
+        </release>
         <release>
             <date>2008-04-05</date>
             <version>

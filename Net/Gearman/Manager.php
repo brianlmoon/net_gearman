@@ -70,7 +70,7 @@ class Net_Gearman_Manager
      */
     public function __construct($server, $timeout = 5)
     {
-        if (strpos(':', $server)) {
+        if (strpos($server, ':')) {
             list($host, $port) = explode(':', $server);
         } else {
             $host = $server;

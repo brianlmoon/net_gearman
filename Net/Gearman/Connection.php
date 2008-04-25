@@ -33,7 +33,7 @@ require_once 'Net/Gearman/Exception.php';
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
  * @link      http://www.danga.com/gearman/
  */
-abstract class Net_Gearman_Connection
+class Net_Gearman_Connection
 {
     /**
      * A list of valid Gearman commands
@@ -42,12 +42,11 @@ abstract class Net_Gearman_Connection
      * integery type (first key in second array) used in the binary header, and
      * the arguments / order of arguments to send/receive.
      *
-     * @access      public
-     * @var         array       $commands       
-     * @see         Net_Gearman_Connection::$magic
-     * @static
+     * @var array $commands       
+     * @see Net_Gearman_Connection::$magic
+     * @see Net_Gearman_Connection::connect()
      */
-    static public $commands = array(
+    static protected $commands = array(
         'can_do' => array(1, array('func')),
         'can_do_timeout' => array(23, array('func', 'timeout')),
         'cant_do' => array(2, array('func')),
@@ -79,13 +78,11 @@ abstract class Net_Gearman_Connection
      * This is the same as the Net_Gearman_Connection::$commands array only
      * it's keyed by the magic (integer value) value of the command.
      *
-     * @access      public
-     * @var         array           $magic
-     * @see         Net_Gearman_Connection::$commands 
-     * @see         Net_Gearman_Connection::__construct()
-     * @static 
+     * @var array $magic
+     * @see Net_Gearman_Connection::$commands 
+     * @see Net_Gearman_Connection::connect()
      */
-    static public $magic = array();
+    static protected $magic = array();
 
     /**
      * Tasks waiting for a handle
@@ -103,12 +100,19 @@ abstract class Net_Gearman_Connection
     /**
      * Is PHP's multibyte overload turned on?
      *
-     *
-     * @access      public
-     * @var         integer           $multiByteSupport
-     * @static 
+     * @var integer $multiByteSupport
      */
-    static public $multiByteSupport = null;
+    static protected $multiByteSupport = null;
+
+    /**
+     * Constructor
+     *
+     * @return void
+     */
+    final private __construct()
+    {
+        // Don't allow this class to be instantiated
+    }
 
     /**
      * Connect to Gearman
@@ -119,12 +123,20 @@ abstract class Net_Gearman_Connection
      * @param string $host    e.g. 127.0.0.1 or 127.0.0.1:7003
      * @param int    $timeout Timeout in milliseconds
      * 
-     * @return void
-     * @throws Net_Gearman_Exception
-     * @see Net_Gearman_Connection::$socket
+     * @return resource A connection to a Gearman server
+     * @throws Net_Gearman_Exception when it can't connect to server
+     * @see Net_Gearman_Connection::$waiting
+     * @see Net_Gearman_Connection::$magic
+     * @see Net_Gearman_Connection::$commands
      */
     static public function connect($host, $timeout = 2000)
     {
+        if (!count(self::$magic)) {
+            foreach (self::$commands as $cmd => $i) {
+                self::$magic[$i[0]] = array($cmd, $i[1]);
+            }
+        }
+
         $err   = '';
         $errno = 0;
         $port  = 7003;
@@ -166,7 +178,7 @@ abstract class Net_Gearman_Connection
      * 
      * @see Net_Gearman_Connection::$commands, Net_Gearman_Connection::$socket
      * @return boolean
-     * @throws Net_Gearman_Exception
+     * @throws Net_Gearman_Exception on invalid command or unable to write 
      */
     static public function send($socket, $command, array $params = array())
     {
@@ -202,7 +214,7 @@ abstract class Net_Gearman_Connection
      * 
      * @see Net_Gearman_Connection::$magic
      * @return array Result read back from Gearman
-     * @throws Net_Gearman_Exception
+     * @throws Net_Gearman_Exception connection issues or invalid responses
      */
     static public function read($socket)
     {
@@ -210,7 +222,8 @@ abstract class Net_Gearman_Connection
         do {
             $buf = socket_read($socket, 12 - self::stringLength($header));
             $header .= $buf;
-        } while ($buf !== FALSE && $buf !== '' && self::stringLength($header) < 12);
+        } while ($buf !== false && 
+                 $buf !== '' && self::stringLength($header) < 12);
         
         if ($buf === '') {
             throw new Net_Gearman_Exception("Connection was reset");
@@ -266,7 +279,7 @@ abstract class Net_Gearman_Connection
      * @param resource $socket  The socket to read from
      * @param float    $timeout The timeout for the read
      * 
-     * @throws Net_Gearman_Exception
+     * @throws Net_Gearman_Exception on timeouts
      * @return array
      */
     static public function blockingRead($socket, $timeout = 500) 
@@ -322,6 +335,7 @@ abstract class Net_Gearman_Connection
                 is_resource($conn) === true && 
                 strtolower(get_resource_type($conn)) == 'socket');
     }
+
     /**
      * Determine if we should use mb_strlen or stock strlen
      *
@@ -340,12 +354,6 @@ abstract class Net_Gearman_Connection
         } else {
             return strlen($value);
         }
-    }
-}
-
-if (!count(Net_Gearman_Connection::$magic)) {
-    foreach (Net_Gearman_Connection::$commands as $cmd => $i) {
-        Net_Gearman_Connection::$magic[$i[0]] = array($cmd, $i[1]);
     }
 }
 
