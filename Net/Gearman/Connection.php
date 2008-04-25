@@ -109,7 +109,7 @@ class Net_Gearman_Connection
      *
      * @return void
      */
-    final private __construct()
+    final private function __construct()
     {
         // Don't allow this class to be instantiated
     }
