@@ -152,7 +152,8 @@ class Net_Gearman_Client
         $params = array(
             'func' => $task->func,
             'uniq' => $task->uniq,
-            'arg' => serialize($task->arg)
+            'arg' => serialize($task->arg),
+            'retry' => $task->retry,
         );
 
         $s = $this->getConnection();
