@@ -62,8 +62,6 @@ class Net_Gearman_Task
      */
     public $type = self::JOB_NORMAL;
 
-    public $retry = 0;
-    
     /**
      * Handle returned from job server
      *
@@ -193,11 +191,10 @@ class Net_Gearman_Task
      * @return      void
      */
     public function __construct($func, array $arg, $uniq = null,
-                                $type = self::JOB_NORMAL, $retry = 0) 
+                                $type = self::JOB_NORMAL) 
     {
         $this->func = $func;
         $this->arg  = $arg;
-        $this->retry  = $retry;
 
         if (is_null($uniq)) {
             $this->uniq = md5($func . serialize($arg) . $type);
@@ -206,7 +203,6 @@ class Net_Gearman_Task
         }
 
         $this->type = $type; 
-        $this->retry = $retry; 
     }
 
     /**

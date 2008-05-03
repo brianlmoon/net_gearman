@@ -56,7 +56,7 @@ class Net_Gearman_Connection
         'noop' => array(6, array()),
         'submit_job' => array(7, array('func', 'uniq', 'arg')),
         'submit_job_high' => array(21, array('func', 'uniq', 'arg')),
-        'submit_job_bg' => array(18, array('func', 'uniq', 'arg', 'retry')),
+        'submit_job_bg' => array(18, array('func', 'uniq', 'arg')),
         'job_created' => array(8, array('handle')),
         'grab_job' => array(9, array()),
         'no_job' => array(10, array()),
@@ -192,6 +192,7 @@ class Net_Gearman_Connection
                 $data[] = $params[$field];
             }
         }
+
         $d = implode("\x00", $data);
 
         $cmd = "\0REQ" . pack("NN", 
