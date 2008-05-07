@@ -199,8 +199,18 @@ class Net_Gearman_Connection
                               self::$commands[$command][0], 
                               self::stringLength($d)) . $d;
 
-        $check = @socket_write($socket, $cmd, self::stringLength($cmd));
-        if ($check === false || $check < self::stringLength($cmd)) {
+        $cmdLength = self::stringLength($cmd); 
+        $written = 0;
+        do {
+            $check = @socket_write($socket, $cmd, self::stringLength($cmd));
+            if ($check === false) {
+                break;
+            }
+
+            $written += (int)$check;
+        } while ($written < $cmdLength);
+
+        if ($check === false) {
             throw new Net_Gearman_Exception(
                 'Could not write command to socket'
             );
