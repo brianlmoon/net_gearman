@@ -202,7 +202,10 @@ class Net_Gearman_Connection
         $cmdLength = self::stringLength($cmd); 
         $written = 0;
         do {
-            $check = @socket_write($socket, $cmd, self::stringLength($cmd));
+            $check = @socket_write($socket, 
+                                   self::subString($cmd, $written, $cmdLength), 
+                                   $cmdLength);
+
             if ($check === false) {
                 break;
             }
@@ -352,6 +355,7 @@ class Net_Gearman_Connection
      * @param string $value The string value to check
      * 
      * @return integer Size of string
+     * @see Net_Gearman_Connection::$multiByteSupport
      */
     static public function stringLength($value)
     {
@@ -363,6 +367,31 @@ class Net_Gearman_Connection
             return mb_strlen($value, '8bit');
         } else {
             return strlen($value);
+        }
+    }
+
+    /**
+     * Multibyte substr() implementation
+     *
+     * @param string  $str    The string to substr()
+     * @param integer $start  The first position used
+     * @param integer $length The maximum length of the returned string
+     *
+     * @return string Portion of $str specified by $start and $length
+     * @see Net_Gearman_Connection::$multiByteSupport
+     * @link http://us3.php.net/mb_substr
+     * @link http://us3.php.net/substr
+     */
+    static public function subString($str, $start, $length)
+    {
+        if (is_null(self::$multiByteSupport)) {
+            self::$multiByteSupport = intval(ini_get('mbstring.func_overload'));
+        }
+
+        if (self::$multiByteSupport & 2) { 
+            return mb_substr($str, $start, $length, '8bit');
+        } else {
+            return substr($str, $start, $length);
         }
     }
 }
