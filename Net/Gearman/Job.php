@@ -30,6 +30,11 @@ if (!defined('NET_GEARMAN_JOB_PATH')) {
     define('NET_GEARMAN_JOB_PATH', 'Net/Gearman/Job');
 }
 
+// Define this if you want your Jobs to have a prefix requirement
+if (!defined('NET_GEARMAN_JOB_CLASS_PREFIX')) {
+    define('NET_GEARMAN_JOB_CLASS_PREFIX', 'Net_Gearman_Job_');
+}
+
 /**
  * Job creation class
  *
@@ -63,7 +68,7 @@ abstract class Net_Gearman_Job
     {
         $file = NET_GEARMAN_JOB_PATH . '/' . $job . '.php';
         include_once $file;
-        $class = 'Net_Gearman_Job_' . $job;
+        $class = NET_GEARMAN_JOB_CLASS_PREFIX . $job;
         if (!class_exists($class)) {
             throw new Net_Gearman_Job_Exception('Invalid Job class');
         }
