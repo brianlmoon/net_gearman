@@ -152,7 +152,7 @@ class Net_Gearman_Client
         $params = array(
             'func' => $task->func,
             'uniq' => $task->uniq,
-            'arg' => serialize($task->arg)
+            'arg' => json_encode($task->arg)
         );
 
         $s = $this->getConnection();
@@ -224,7 +224,7 @@ class Net_Gearman_Client
         switch ($resp['function']) {
         case 'work_complete':
             $tasks->tasksCount--;
-            $task->complete(unserialize($resp['data']['result']));
+            $task->complete(json_decode($resp['data']['result']));
             break;
         case 'work_status':
             $n = (int)$resp['data']['numerator'];

@@ -110,7 +110,7 @@ abstract class Net_Gearman_Job_Common
     {
         Net_Gearman_Connection::send($this->conn, 'work_complete', array(
             'handle' => $this->handle,
-            'result' => serialize($result)
+            'result' => json_encode($result)
         ));
     }
 
