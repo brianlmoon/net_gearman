@@ -224,7 +224,7 @@ class Net_Gearman_Client
         switch ($resp['function']) {
         case 'work_complete':
             $tasks->tasksCount--;
-            $task->complete(json_decode($resp['data']['result']));
+            $task->complete(json_decode($resp['data']['result'], true));
             break;
         case 'work_status':
             $n = (int)$resp['data']['numerator'];

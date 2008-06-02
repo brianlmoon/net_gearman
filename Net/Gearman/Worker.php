@@ -292,7 +292,7 @@ class Net_Gearman_Worker
 
         if (isset($resp['data']['arg']) && 
             Net_Gearman_Connection::stringLength($resp['data']['arg'])) {
-            $arg = json_decode($resp['data']['arg']);
+            $arg = json_decode($resp['data']['arg'], true);
         }
 
         $job = Net_Gearman_Job::factory($name, $socket, $handle);
