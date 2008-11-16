@@ -24,7 +24,7 @@
         <email>cg@chrisgoffinet.com</email>
         <active>yes</active>
     </lead>
-    <date>2008-MM-DD</date>
+    <date>2008-11-16</date>
     <version>
         <release>0.1.2</release>
         <api>0.1.2</api>
@@ -35,8 +35,10 @@
     </stability>
     <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
     <notes><![CDATA[
-        * Switched from PHP serialize()/unserialize() to json_encode()/json_decode()
-        * Removed mbstring as a requirement for installation
+        * WARNING - BC BREAK: Pass entire task object to failure callbacks (#15037, jstump)
+        * WARNING - BC BREAK: Switched from PHP serialize()/unserialize() to json_encode()/json_decode() (jstump)
+        * Switched to native PHP/SPL interfaces IteratorAggregate and Countable in Net_Gearman_Set (#14913, ieure)
+        * Removed mbstring as a requirement for installation (jstump)
     ]]></notes>
     <contents>
         <dir name="/">
