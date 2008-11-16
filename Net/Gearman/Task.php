@@ -265,7 +265,7 @@ class Net_Gearman_Task
         }
 
         foreach ($this->callback[self::TASK_FAIL] as $callback) {
-            call_user_func($callback, $this->func, $this->handle);
+            call_user_func($callback, $this);
         }
     }
 
