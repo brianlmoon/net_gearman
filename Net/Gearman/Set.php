@@ -65,7 +65,7 @@ require_once 'Net/Gearman/Task.php';
  * @link      http://www.danga.com/gearman/
  * @see       Net_Gearman_Job_Common, Net_Gearman_Worker
  */
-class Net_Gearman_Set implements Iterator
+class Net_Gearman_Set implements IteratorAggregate, Countable
 {
     /**
      * Tasks count
@@ -191,58 +191,24 @@ class Net_Gearman_Set implements Iterator
     }
 
     /**
-     * Rewind the tasks array
+     * Get the iterator
      *
-     * @return void
-     * @link http://php.net/manual/en/language.oop5.iterations.php
+     * @return ArrayIterator Tasks
      */
-    public function rewind()
+    public function getIterator()
     {
-        reset($this->tasks);
+        return new ArrayIterator($this->tasks);
     }
 
     /**
-     * Return current position in tasks array
+     * Get the task count
      *
-     * @return int
-     * @link http://php.net/manual/en/language.oop5.iterations.php
+     * @return int Number of tasks in the set
+     * @see    {@link Countable::count()}
      */
-    public function current()
+    public function count()
     {
-        return current($this->tasks);
-    }
-
-    /**
-     * Get the next key from tasks array
-     *
-     * @return int
-     * @link http://php.net/manual/en/language.oop5.iterations.php
-     */
-    public function key() 
-    {
-        return key($this->tasks);
-    }
-
-    /**
-     * Advance the array pointer
-     *
-     * @return mixed
-     * @link http://php.net/manual/en/language.oop5.iterations.php
-     */
-    public function next()
-    {
-        return next($this->tasks);
-    }
-
-    /**
-     * Current position valid?
-     *
-     * @return boolean
-     * @link http://php.net/manual/en/language.oop5.iterations.php
-     */
-    public function valid()
-    {
-        return ($this->current() !== false);
+        return $this->tasksCount;
     }
 }
 
