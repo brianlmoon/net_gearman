@@ -201,19 +201,30 @@ class Net_Gearman_Connection
 
         $cmdLength = self::stringLength($cmd); 
         $written = 0;
+        $error = false;
         do {
             $check = @socket_write($socket, 
                                    self::subString($cmd, $written, $cmdLength), 
                                    $cmdLength);
 
             if ($check === false) {
-                break;
+                if (socket_last_error($socket) == SOCKET_EAGAIN or            
+                    socket_last_error($socket) == SOCKET_EWOULDBLOCK or
+                    socket_last_error($socket) == SOCKET_EINPROGRESS) 
+                {
+                  // skip this is okay
+                }
+                else
+                {
+                   $error = true;
+                   break;   
+                }
             }
 
             $written += (int)$check;
         } while ($written < $cmdLength);
 
-        if ($check === false) {
+        if ($error === true) {
             throw new Net_Gearman_Exception(
                 'Could not write command to socket'
             );
