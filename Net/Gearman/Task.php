@@ -190,7 +190,7 @@ class Net_Gearman_Task
      *
      * @return      void
      */
-    public function __construct($func, array $arg, $uniq = null,
+    public function __construct($func, $arg, $uniq = null,
                                 $type = self::JOB_NORMAL) 
     {
         $this->func = $func;

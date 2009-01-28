@@ -113,7 +113,7 @@ class Net_Gearman_Client
      */
     public function __call($func, array $args = array())
     {
-        $send = array();
+        $send = "";
         if (isset($args[0]) && is_array($args[0]) && count($args[0])) {
             $send = $args[0];
         }
@@ -149,10 +149,17 @@ class Net_Gearman_Client
             break;
         }
 
+        // If we don't have a scalar JSON encode the data
+        if(!is_scalar($task->arg)){
+            $arg = json_encode($task->arg);
+        } else {
+            $arg = $task->arg;
+        }
+
         $params = array(
             'func' => $task->func,
             'uniq' => $task->uniq,
-            'arg' => json_encode($task->arg)
+            'arg'  => $arg
         );
 
         $s = $this->getConnection();
