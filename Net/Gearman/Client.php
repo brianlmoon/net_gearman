@@ -114,7 +114,7 @@ class Net_Gearman_Client
     public function __call($func, array $args = array())
     {
         $send = "";
-        if (isset($args[0]) && is_array($args[0]) && count($args[0])) {
+        if (isset($args[0]) && !empty($args[0])) {
             $send = $args[0];
         }
 
@@ -149,7 +149,8 @@ class Net_Gearman_Client
             break;
         }
 
-        // If we don't have a scalar JSON encode the data
+        // if we don't have a scalar
+        // json encode the data
         if(!is_scalar($task->arg)){
             $arg = json_encode($task->arg);
         } else {
