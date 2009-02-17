@@ -101,6 +101,14 @@ class Net_Gearman_Worker
     );
 
     /**
+     * Unique id for this worker
+     *
+     * @var string $id
+     */
+    protected $id = "";
+
+
+    /**
      * Callback types
      *
      * @const integer JOB_START    Ran when a job is started
@@ -115,12 +123,13 @@ class Net_Gearman_Worker
      * Constructor
      *
      * @param array $servers List of servers to connect to
+     * @param string $id     Optional unique id for this worker
      * 
      * @return void
      * @throws Net_Gearman_Exception
      * @see Net_Gearman_Connection
      */
-    public function __construct($servers)
+    public function __construct($servers, $id = "")
     {
         if (!is_array($servers) && strlen($servers)) {
             $servers = array($servers);
@@ -128,11 +137,22 @@ class Net_Gearman_Worker
             throw new Net_Gearman_Exception('Invalid servers specified');
         }
 
+        if(empty($id)){
+            $id = "pid_".getmypid()."_".uniqid();
+        }
+
+        $this->id = $id;
+
         foreach ($servers as $s) {
             try {
                 $conn = Net_Gearman_Connection::connect($s);   
+
+                Net_Gearman_Connection::send($conn, "set_client_id", array("client_id" => $this->id));
+
                 $this->conn[$s] = $conn;             
+
             } catch (Net_Gearman_Exception $e) {
+
                 $this->retryConn[$s] = time();
             }
         }
@@ -232,6 +252,7 @@ class Net_Gearman_Worker
                         $this->conn[$s]         = $conn;
                         $retryChange            = true;
                         unset($this->retryConn[$s]);
+                        Net_Gearman_Connection::send($conn, "set_client_id", array("client_id" => $this->id));
                     } catch (Net_Gearman_Exception $e) {
                         $this->retryConn[$s] = $currentTime;
                     }
