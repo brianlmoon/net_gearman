@@ -146,11 +146,13 @@ class Net_Gearman_Manager
             list($info, $abilities) = explode(" : ", $t);
             list($fd, $ip, $id)     = explode(' ', $info);
 
+            $abilities = trim($abilities);
+
             $workers[] = array(
                 'fd' => $fd,
                 'ip' => $ip,
                 'id' => $id,
-                'abilities' => explode(' ', $abilities)
+                'abilities' => empty($abilities) ? array() : explode(' ', $abilities)
             );
         }
 
