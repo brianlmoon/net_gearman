@@ -5,21 +5,21 @@
  *
  * PHP version 5.1.0+
  *
- * LICENSE: This source file is subject to the New BSD license that is
+ * LICENSE: This source file is subject to the New BSD license that is 
  * available through the world-wide-web at the following URI:
- * http://www.opensource.org/licenses/bsd-license.php. If you did not receive
- * a copy of the New BSD License and are unable to obtain it through the web,
+ * http://www.opensource.org/licenses/bsd-license.php. If you did not receive  
+ * a copy of the New BSD License and are unable to obtain it through the web, 
  * please send a note to license@php.net so we can mail you a copy immediately.
  *
  * @category  Net
  * @package   Net_Gearman
- * @author    Joe Stump <joe@joestump.net>
+ * @author    Joe Stump <joe@joestump.net> 
  * @copyright 2007-2008 Digg.com, Inc.
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
  * @version   CVS: $Id$
  * @link      http://pear.php.net/package/Net_Gearman
  * @link      http://www.danga.com/gearman/
- */
+ */ 
 
 require_once 'Net/Gearman/Connection.php';
 require_once 'Net/Gearman/Set.php';
@@ -32,7 +32,7 @@ require_once 'Net/Gearman/Set.php';
  *
  * @category  Net
  * @package   Net_Gearman
- * @author    Joe Stump <joe@joestump.net>
+ * @author    Joe Stump <joe@joestump.net> 
  * @copyright 2007-2008 Digg.com, Inc.
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
  * @link      http://www.danga.com/gearman/
@@ -65,7 +65,7 @@ class Net_Gearman_Client
      *
      * @param array   $servers An array of servers or a single server
      * @param integer $timeout Timeout in microseconds
-     *
+     * 
      * @return void
      * @throws Net_Gearman_Exception
      * @see Net_Gearman_Connection
@@ -106,7 +106,7 @@ class Net_Gearman_Client
      * Fire off a background task with the given arguments
      *
      * @param string $func Name of job to run
-     * @param array  $args First key should be args to send
+     * @param array  $args First key should be args to send 
      *
      * @return void
      * @see Net_Gearman_Task, Net_Gearman_Set
@@ -114,7 +114,7 @@ class Net_Gearman_Client
     public function __call($func, array $args = array())
     {
         $send = "";
-        if (isset($args[0]) && !empty($args[0])) {
+        if (isset($args[0]) && is_array($args[0]) && count($args[0])) {
             $send = $args[0];
         }
 
@@ -131,7 +131,7 @@ class Net_Gearman_Client
      * Submit a task to Gearman
      *
      * @param object $task Task to submit to Gearman
-     *
+     * 
      * @return      void
      * @see         Net_Gearman_Task, Net_Gearman_Client::runSet()
      */
@@ -149,8 +149,7 @@ class Net_Gearman_Client
             break;
         }
 
-        // if we don't have a scalar
-        // json encode the data
+        // If we don't have a scalar JSON encode the data
         if(!is_scalar($task->arg)){
             $arg = json_encode($task->arg);
         } else {
@@ -177,11 +176,11 @@ class Net_Gearman_Client
      * Run a set of tasks
      *
      * @param object $set A set of tasks to run
-     *
+     * 
      * @return void
      * @see Net_Gearman_Set, Net_Gearman_Task
      */
-    public function runSet(Net_Gearman_Set $set)
+    public function runSet(Net_Gearman_Set $set) 
     {
         $totalTasks = $set->tasksCount;
         $taskKeys   = array_keys($set->tasks);
@@ -213,18 +212,18 @@ class Net_Gearman_Client
     }
 
     /**
-     * Handle the response read in
+     * Handle the response read in 
      *
      * @param array    $resp  The raw array response
-     * @param resource $s     The socket
+     * @param resource $s     The socket 
      * @param object   $tasks The tasks being ran
-     *
+     * 
      * @return void
      * @throws Net_Gearman_Exception
      */
-    protected function handleResponse($resp, $s, Net_Gearman_Set $tasks)
+    protected function handleResponse($resp, $s, Net_Gearman_Set $tasks) 
     {
-        if (isset($resp['data']['handle']) &&
+        if (isset($resp['data']['handle']) && 
             $resp['function'] != 'job_created') {
             $task = $tasks->getTask($resp['data']['handle']);
         }
@@ -256,7 +255,7 @@ class Net_Gearman_Client
         default:
             throw new Net_Gearman_Exception(
                 'Invalid function ' . $resp['function']
-            );
+            ); 
         }
     }
 
