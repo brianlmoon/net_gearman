@@ -241,7 +241,7 @@ class Net_Gearman_Worker
                 }
 
                 $read = $this->conn;
-                socket_select($read, $write, $except, 1);
+                socket_select($read, $write, $except, 60);
                 $idle = (count($read) == 0);
             }
 
