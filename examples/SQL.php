@@ -4,7 +4,7 @@ require_once 'DB.php';
 
 class Net_Gearman_Job_SQL extends Net_Gearman_Job_Common
 {
-    public function run(stdClass $arg)
+    public function run($arg)
     {
         if (!isset($arg->sql) || !strlen($arg->sql)) {
             throw new Net_Gearman_Job_Exception;
