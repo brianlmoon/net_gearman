@@ -59,6 +59,9 @@ class Net_Gearman_Task
      * @see Net_Gearman_Task::JOB_NORMAL
      * @see Net_Gearman_Task::JOB_BACKGROUND
      * @see Net_Gearman_Task::JOB_HIGH
+     * @see Net_Gearman_Task::JOB_HIGH_BACKGROUND
+     * @see Net_Gearman_Task::JOB_LOW
+     * @see Net_Gearman_Task::JOB_LOW_BACKGROUND
      */
     public $type = self::JOB_NORMAL;
 
@@ -144,7 +147,28 @@ class Net_Gearman_Task
      *
      * @var integer JOB_HIGH
      */
-    const JOB_HIGH = 2;
+    const JOB_HIGH = 3;
+
+    /**
+     * High priority, background job
+     *
+     * @var integer JOB_HIGH
+     */
+    const JOB_HIGH_BACKGROUND = 4;
+
+    /**
+     * LOW priority job
+     *
+     * @var integer JOB_LOW
+     */
+    const JOB_LOW = 5;
+
+    /**
+     * Low priority, background job
+     *
+     * @var integer JOB_LOW_BACKGROUND
+     */
+    const JOB_LOW_BACKGROUND = 6;
 
     /**
      * Callback of type complete
@@ -184,7 +208,7 @@ class Net_Gearman_Task
      * Constructor
      *
      * @param string  $func Name of job to run
-     * @param array   $arg  List of arguments for job
+     * @param mixed   $arg  List of arguments for job
      * @param string  $uniq The unique id of the job 
      * @param integer $type Type of job to run task as
      *

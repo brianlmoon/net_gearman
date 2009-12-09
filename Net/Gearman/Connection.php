@@ -57,6 +57,9 @@ class Net_Gearman_Connection
         'submit_job' => array(7, array('func', 'uniq', 'arg')),
         'submit_job_high' => array(21, array('func', 'uniq', 'arg')),
         'submit_job_bg' => array(18, array('func', 'uniq', 'arg')),
+        'submit_job_high_bg' => array(32, array('func', 'uniq', 'arg')),
+        'submit_job_low' => array(33, array('func', 'uniq', 'arg')),
+        'submit_job_low_bg' => array(34, array('func', 'uniq', 'arg')),
         'job_created' => array(8, array('handle')),
         'grab_job' => array(9, array()),
         'no_job' => array(10, array()),
@@ -148,16 +151,20 @@ class Net_Gearman_Connection
         $start = microtime(true);
         do {
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-            @socket_connect($socket, $host, $port);
-            $errorCode = socket_last_error($socket);
-            
+            $socket_connected = @socket_connect($socket, $host, $port);
+            if($socket_connected){
             socket_set_nonblock($socket);
             socket_set_option($socket, SOL_TCP, 1, 1);
             $timeLeft = ((microtime(true) - $start) * 1000);
-        } while (!is_resource($socket) && $timeLeft < $timeout);
+            }
+        } while (!$socket_connected && $timeLeft < $timeout);
 
-        if ($errorCode == 111) {
-            throw new Net_Gearman_Exception("Can't connect to server");
+        if (!$socket_connected) {
+            $errno = socket_last_error($socket);
+            $errstr	= socket_strerror($errno);
+            throw new Net_Gearman_Exception(
+                "Can't connect to server ($errno: $errstr)"
+            );
         }
 
         self::$waiting[(int)$socket] = array();
@@ -225,8 +232,10 @@ class Net_Gearman_Connection
         } while ($written < $cmdLength);
 
         if ($error === true) {
+            $errno = socket_last_error($socket);
+            $errstr	= socket_strerror($errno);
             throw new Net_Gearman_Exception(
-                'Could not write command to socket'
+                "Could not write command to socket ($errno: $errstr)"
             );
         }
     }
