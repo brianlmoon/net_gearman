@@ -232,10 +232,6 @@ class Net_Gearman_Client
 
                     $set->tasks[$k]->finished = true;
                     $set->tasksCount--;
-                } else {
-                    if($set->tasks[$k]->timeout !== null) {
-                        $started = microtime(true);
-                    }
                 }
 
                 $t++;
