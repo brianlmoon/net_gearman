@@ -142,7 +142,7 @@ class Net_Gearman_Connection
 
         $err   = '';
         $errno = 0;
-        $port  = 7003;
+        $port  = 4730;
 
         if (strpos($host, ':')) {
             list($host, $port) = explode(':', $host);
