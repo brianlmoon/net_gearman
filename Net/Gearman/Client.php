@@ -95,11 +95,24 @@ class Net_Gearman_Client
     /**
      * Get a connection to a Gearman server
      *
+     * @param string  $uniq The unique id of the job
+     *
      * @return resource A connection to a Gearman server
      */
-    protected function getConnection()
+    protected function getConnection($uniq=null)
     {
-        return $this->conn[array_rand($this->conn)];
+        $conn = null;
+
+        if(count($this->conn) === 1){
+            $conn = current($this->conn);
+        } elseif($uniq === null){
+            $conn = $this->conn[array_rand($this->conn)];
+        } else {
+            $server = ord(substr(md5($uniq), -1)) % count($this->conn);
+            $conn = $this->conn[$server];
+        }
+
+        return $conn;
     }
 
     /**
@@ -172,7 +185,7 @@ class Net_Gearman_Client
             'arg'  => $arg
         );
 
-        $s = $this->getConnection();
+        $s = $this->getConnection($task->uniq);
         Net_Gearman_Connection::send($s, $type, $params);
 
         if (!is_array(Net_Gearman_Connection::$waiting[$s])) {
