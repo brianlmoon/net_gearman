@@ -74,7 +74,7 @@ class Net_Gearman_Manager
             list($host, $port) = explode(':', $server);
         } else {
             $host = $server;
-            $port = 7003;
+            $port = 4730;
         }
 
         $errCode    = 0;
