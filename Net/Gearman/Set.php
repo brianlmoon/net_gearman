@@ -62,6 +62,7 @@ require_once 'Net/Gearman/Task.php';
  * @author    Joe Stump <joe@joestump.net> 
  * @copyright 2007-2008 Digg.com, Inc.
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
+ * @version   Release: @package_version@
  * @link      http://www.danga.com/gearman/
  * @see       Net_Gearman_Job_Common, Net_Gearman_Worker
  */

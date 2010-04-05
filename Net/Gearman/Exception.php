@@ -32,11 +32,11 @@ require_once 'PEAR/Exception.php';
  * @copyright 2007-2008 Digg.com, Inc.
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
  * @link      http://www.danga.com/gearman/
+ * @version   Release: @package_version@
  * @see       PEAR_Exception
  */
 class Net_Gearman_Exception extends PEAR_Exception
 {
-
 }
 
 ?>

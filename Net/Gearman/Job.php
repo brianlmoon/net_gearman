@@ -44,6 +44,7 @@ if (!defined('NET_GEARMAN_JOB_CLASS_PREFIX')) {
  * @copyright 2007-2008 Digg.com, Inc.
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
  * @link      http://www.danga.com/gearman/
+ * @version   Release: @package_version@
  * @see       Net_Gearman_Job_Common, Net_Gearman_Worker
  */
 abstract class Net_Gearman_Job
