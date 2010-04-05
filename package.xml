@@ -13,16 +13,21 @@
     <summary>A PHP interface to Danga's Gearman</summary>
     <description>Gearman (http://www.danga.com/gearman) is a system to farm out work to other machines. It can load balance function calls to lots of machines and allows you to call functions between languages. It can also run all function calls in parallel.</description>
     <lead>
+        <name>Brian Moon</name>
+        <user>brianlmoon</user>
+        <email>brian@moonspot.net</email>
+        <active>yes</active>
+    <lead>
         <name>Joe Stump</name>
         <user>jstump</user>
         <email>joe@joestump.net</email>
-        <active>yes</active>
+        <active>no</active>
     </lead>
     <lead>
         <name>Chris Goffinet</name>
         <user>lenn0x</user>
         <email>cg@chrisgoffinet.com</email>
-        <active>yes</active>
+        <active>no</active>
     </lead>
     <date>2008-01-28</date>
     <version>
