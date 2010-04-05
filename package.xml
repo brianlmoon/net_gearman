@@ -17,6 +17,7 @@
         <user>brianlmoon</user>
         <email>brian@moonspot.net</email>
         <active>yes</active>
+    </lead>
     <lead>
         <name>Joe Stump</name>
         <user>jstump</user>
@@ -46,27 +47,37 @@
         <dir name="/">
             <dir name="Net">
                 <dir name="Gearman">
-                    <file name="Client.php"
-                          role="php" />
-                    <file name="Connection.php"
-                          role="php" />
-                    <file name="Exception.php"
-                          role="php" />
-                    <file name="Job.php"
-                          role="php" />
-                    <file name="Manager.php"
-                          role="php" />
-                    <file name="Set.php"
-                          role="php" />
-                    <file name="Task.php"
-                          role="php" />
-                    <file name="Worker.php"
-                          role="php" />
+                    <file name="Client.php" role="php">
+                        <tasks:replace from="@package_version@" to="version" type="package-info" />
+                    </file>
+                    <file name="Connection.php" role="php">
+                        <tasks:replace from="@package_version@" to="version" type="package-info" />
+                    </file>
+                    <file name="Exception.php" role="php">
+                        <tasks:replace from="@package_version@" to="version" type="package-info" />
+                    </file>
+                    <file name="Job.php" role="php">
+                        <tasks:replace from="@package_version@" to="version" type="package-info" />
+                    </file>
+                    <file name="Manager.php" role="php">
+                        <tasks:replace from="@package_version@" to="version" type="package-info" />
+                    </file>
+                    <file name="Set.php" role="php">
+                        <tasks:replace from="@package_version@" to="version" type="package-info" />
+                    </file>
+                    <file name="Task.php" role="php">
+                        <tasks:replace from="@package_version@" to="version" type="package-info" />
+                    </file>
+                    <file name="Worker.php" role="php">
+                        <tasks:replace from="@package_version@" to="version" type="package-info" />
+                    </file>
                     <dir name="Job">
-                        <file name="Common.php"
-                              role="php" />
-                        <file name="Exception.php"
-                              role="php" />
+                        <file name="Common.php" role="php">
+                            <tasks:replace from="@package_version@" to="version" type="package-info" />
+                        </file>
+                        <file name="Exception.php" role="php">
+                            <tasks:replace from="@package_version@" to="version" type="package-info" />
+                        </file>
                     </dir>
                 </dir>
             </dir>
