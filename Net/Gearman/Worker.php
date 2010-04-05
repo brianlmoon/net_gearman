@@ -348,14 +348,17 @@ class Net_Gearman_Worker
      * @param integer  $type     Type of callback
      * 
      * @return void
-     * @throws Net_Gearman_Exception
+     * @throws Net_Gearman_Exception When an invalid callback is specified.
+     * @throws Net_Gearman_Exception When an invalid type is specified.
      */
     public function attachCallback($callback, $type = self::JOB_COMPLETE)
     {
         if (!is_callable($callback)) {
             throw new Net_Gearman_Exception('Invalid callback specified');
         }
-
+        if (!isset($this->callback[$type])) {
+            throw new Net_Gearman_Exception('Invalid callback type specified.');
+        }
         $this->callback[$type][] = $callback;
     }
 
@@ -370,7 +373,7 @@ class Net_Gearman_Worker
      */
     protected function start($handle, $job, $args)
     {
-        if (!count($this->callback[self::JOB_START])) {
+        if (count($this->callback[self::JOB_START]) == 0) {
             return; // No callbacks to run
         }
 
@@ -390,7 +393,7 @@ class Net_Gearman_Worker
      */
     protected function complete($handle, $job, array $result)
     {
-        if (!count($this->callback[self::JOB_COMPLETE])) {
+        if (count($this->callback[self::JOB_COMPLETE]) == 0) {
             return; // No callbacks to run
         }
 
@@ -410,7 +413,7 @@ class Net_Gearman_Worker
      */
     protected function fail($handle, $job, PEAR_Exception $error)
     {
-        if (!count($this->callback[self::JOB_FAIL])) {
+        if (count($this->callback[self::JOB_FAIL]) == 0) {
             return; // No callbacks to run
         }
 
