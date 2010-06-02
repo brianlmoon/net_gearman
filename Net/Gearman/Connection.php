@@ -153,10 +153,10 @@ class Net_Gearman_Connection
         do {
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
             $socket_connected = @socket_connect($socket, $host, $port);
+            $timeLeft = ((microtime(true) - $start) * 1000);
             if ($socket_connected) {
                 socket_set_nonblock($socket);
                 socket_set_option($socket, SOL_TCP, 1, 1);
-                $timeLeft = ((microtime(true) - $start) * 1000);
             }
         } while (!$socket_connected && $timeLeft < $timeout);
 
