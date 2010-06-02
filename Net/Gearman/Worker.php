@@ -222,6 +222,7 @@ class Net_Gearman_Worker
             $currentTime = time();
             
             foreach ($this->conn as $server => $socket) {
+                $worked = false;
                 try {
                     $worked = $this->doWork($socket);
                 } catch (Net_Gearman_Exception $e) {
