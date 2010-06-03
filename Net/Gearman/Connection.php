@@ -254,13 +254,15 @@ class Net_Gearman_Connection
     {
         $header = '';
         do {
-            $buf = socket_read($socket, 12 - self::stringLength($header));
+            $buf = @socket_read($socket, 12 - self::stringLength($header));
             $header .= $buf;
         } while ($buf !== false &&
                  $buf !== '' && self::stringLength($header) < 12);
 
-        if ($buf === '') {
-            throw new Net_Gearman_Exception("Connection was reset");
+        if ($buf === false {
+            throw new Net_Gearman_Exception(
+                socket_strerror(socket_last_error())
+            );
         }
 
         if (self::stringLength($header) == 0) {
