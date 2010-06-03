@@ -53,6 +53,11 @@ abstract class Net_Gearman_Job_Common
     protected $conn = null;
 
     /**
+     * Parameters for Job instantiation
+     * @var array $params
+     */
+
+    /**
      * Constructor
      *
      * @param resource $conn   Connection to communicate with
@@ -60,10 +65,11 @@ abstract class Net_Gearman_Job_Common
      * 
      * @return void
      */
-    public function __construct($conn, $handle)
+    public function __construct($conn, $handle, array $params=array())
     {
         $this->conn   = $conn;
         $this->handle = $handle;
+        $this->params = $params;
     }
 
     /**

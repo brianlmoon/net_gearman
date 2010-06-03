@@ -65,7 +65,7 @@ abstract class Net_Gearman_Job
      * @see Net_Gearman_Job_Common
      * @throws Net_Gearman_Exception
      */
-    static public function factory($job, $conn, $handle)
+    static public function factory($job, $conn, $handle, $params=array())
     {
         $file = NET_GEARMAN_JOB_PATH . '/' . $job . '.php';
         include_once $file;
@@ -74,7 +74,7 @@ abstract class Net_Gearman_Job
             throw new Net_Gearman_Job_Exception('Invalid Job class');
         }
     
-        $instance = new $class($conn, $handle);
+        $instance = new $class($conn, $handle, $params);
         if (!$instance instanceof Net_Gearman_Job_Common) {
             throw new Net_Gearman_Job_Exception('Job is of invalid type');
         }
