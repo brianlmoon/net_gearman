@@ -259,7 +259,7 @@ class Net_Gearman_Connection
         } while ($buf !== false &&
                  $buf !== '' && self::stringLength($header) < 12);
 
-        if ($buf === false {
+        if ($buf === false) {
             throw new Net_Gearman_Exception(
                 socket_strerror(socket_last_error())
             );
