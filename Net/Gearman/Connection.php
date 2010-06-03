@@ -259,10 +259,13 @@ class Net_Gearman_Connection
         } while ($buf !== false &&
                  $buf !== '' && self::stringLength($header) < 12);
 
-        if ($buf === false) {
-            throw new Net_Gearman_Exception(
-                socket_strerror(socket_last_error())
-            );
+        if ($buf === false || $buf === '') {
+            if ($errno = socket_last_error()) {
+                $errstr = socket_strerror($errno);
+            } else {
+                $errstr = 'Error reading from socket';
+            }
+            throw new Net_Gearman_Exception($errstr);
         }
 
         if (self::stringLength($header) == 0) {
