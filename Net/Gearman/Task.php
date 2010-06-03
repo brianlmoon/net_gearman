@@ -276,8 +276,7 @@ class Net_Gearman_Task
     /**
      * Run the failure callbacks
      *
-     * Failure callbacks are passed the name of the job and the handle of the
-     * job that failed (in that order).
+     * Failure callbacks are passed the task object job that failed
      *
      * @return void
      * @see Net_Gearman_Task::attachCallback()
