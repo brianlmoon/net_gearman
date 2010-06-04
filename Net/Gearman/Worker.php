@@ -86,6 +86,12 @@ class Net_Gearman_Worker
      */
     protected $abilities = array();
 
+    /**
+     * Parameters for job contructors, indexed by ability name
+     *
+     * @var array $initParams
+     */
+    protected $initParams = array();
     
     /**
      * Callbacks registered for this worker
@@ -170,11 +176,12 @@ class Net_Gearman_Worker
      *
      * @param string  $ability Name of functcion/ability
      * @param integer $timeout How long to give this job
+     * @param array $initParams Parameters for job constructor
      *
      * @return void
      * @see Net_Gearman_Connection::send()
      */
-    public function addAbility($ability, $timeout = null)
+    public function addAbility($ability, $timeout = null, $initParams=array())
     {
         $call   = 'can_do';
         $params = array('func' => $ability);
@@ -182,6 +189,8 @@ class Net_Gearman_Worker
             $params['timeout'] = $timeout;
             $call              = 'can_do_timeout';
         }
+
+        $this->initParams[$ability] = $initParams;
         
         $this->abilities[$ability] = $timeout;
         
@@ -269,7 +278,9 @@ class Net_Gearman_Worker
             if ($retryChange === true) {
                 // broadcast all abilities to all servers
                 foreach ($this->abilities as $ability => $timeout) {
-                    $this->addAbility($ability, $timeout);
+                    $this->addAbility(
+                        $ability, $timeout, $this->initParams[$ability]
+                    );
                 }
             }
 
@@ -321,7 +332,9 @@ class Net_Gearman_Worker
             }
         }
 
-        $job = Net_Gearman_Job::factory($name, $socket, $handle);
+        $job = Net_Gearman_Job::factory(
+            $name, $socket, $handle, $this->initParams[$name]
+        );
         try {
             $this->start($handle, $name, $arg);
             $res = $job->run($arg); 

@@ -54,7 +54,7 @@ abstract class Net_Gearman_Job_Common
 
     /**
      * Parameters for Job instantiation
-     * @var array $params
+     * @var array $initParams
      */
 
     /**
@@ -62,14 +62,15 @@ abstract class Net_Gearman_Job_Common
      *
      * @param resource $conn   Connection to communicate with
      * @param string   $handle Job ID / handle for this job
+     * @param array $initParams initialization parameters
      * 
      * @return void
      */
-    public function __construct($conn, $handle, array $params=array())
+    public function __construct($conn, $handle, array $initParams=array())
     {
         $this->conn   = $conn;
         $this->handle = $handle;
-        $this->params = $params;
+        $this->initParams = $initParams;
     }
 
     /**

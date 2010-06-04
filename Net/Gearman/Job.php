@@ -60,12 +60,13 @@ abstract class Net_Gearman_Job
      * @param string $job    Name of job (func in Gearman terms)
      * @param object $conn   Instance of Net_Gearman_Connection
      * @param string $handle Gearman job handle of job
+     * @param string $initParams initialisation parameters for job
      * 
      * @return object Instance of Net_Gearman_Job_Common child
      * @see Net_Gearman_Job_Common
      * @throws Net_Gearman_Exception
      */
-    static public function factory($job, $conn, $handle, $params=array())
+    static public function factory($job, $conn, $handle, $initParams=array())
     {
         $file = NET_GEARMAN_JOB_PATH . '/' . $job . '.php';
         include_once $file;
@@ -73,8 +74,8 @@ abstract class Net_Gearman_Job
         if (!class_exists($class)) {
             throw new Net_Gearman_Job_Exception('Invalid Job class');
         }
-    
-        $instance = new $class($conn, $handle, $params);
+
+        $instance = new $class($conn, $handle, $initParams);
         if (!$instance instanceof Net_Gearman_Job_Common) {
             throw new Net_Gearman_Job_Exception('Job is of invalid type');
         }
