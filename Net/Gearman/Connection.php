@@ -133,7 +133,7 @@ class Net_Gearman_Connection
      * @see Net_Gearman_Connection::$magic
      * @see Net_Gearman_Connection::$commands
      */
-    static public function connect($host, $timeout = 2000)
+    static public function connect($host = 'localhost', $timeout = 2000)
     {
         if (!count(self::$magic)) {
             foreach (self::$commands as $cmd => $i) {
