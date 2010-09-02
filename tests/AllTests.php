@@ -103,6 +103,7 @@ class Net_Gearman_AllTests
          * You must add each additional class-level test suite name here
          */
         $suite->addTestSuite('Net_Gearman_ConnectionTest');
+        $suite->addTestSuite('Net_Gearman_TaskTest');
 
         /**
          * @desc add PHPT tests
