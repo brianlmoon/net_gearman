@@ -30,6 +30,8 @@ if (version_compare(PHP_VERSION, "5.1.4") < 0) {
     exit(1);
 }
 
+$path = ini_get('include_path');
+ini_set('include_path', realpath('../') . PATH_SEPARATOR . $path);
 
 /**
  * Derive the "main" method name
@@ -47,11 +49,6 @@ if (!defined('PHPUnit_MAIN_METHOD')) {
 require_once 'PHPUnit/Framework.php';
 require_once 'PHPUnit/TextUI/TestRunner.php';
 require_once 'PHPUnit/Extensions/PhptTestSuite.php';
-
-/*
- * You must add each additional class-level test suite file here
- */
-// there are no PhpUnit test files... only PHPTs.. so nothing is listed here
 
 /**
  * directory where PHPT tests are located
@@ -105,7 +102,7 @@ class Net_Gearman_AllTests
         /*
          * You must add each additional class-level test suite name here
          */
-        // there are no PhpUnit test files... only PHPTs.. so nothing is listed here
+        $suite->addTestSuite('Net_Gearman_ConnectionTest');
 
         /**
          * @desc add PHPT tests
@@ -115,7 +112,15 @@ class Net_Gearman_AllTests
 
         return $suite;
     }
+
+    public static function autoload($className)
+    {
+        $file = str_replace('_', '/', $className) . '.php';
+        return include $file;
+    }
 }
+
+spl_autoload_register(array('Net_Gearman_AllTests', 'autoload'));
 
 /**
  * Call the main method if this file is executed directly
