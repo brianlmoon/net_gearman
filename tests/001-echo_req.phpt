@@ -1,9 +1,13 @@
 --TEST--
 echo_req
+--SKIPIF--
+<?php
+if (!file_exists(dirname(__FILE__) . '/tests-config.php')) {
+    die('skip This test requires a test-config.php file.');
+}
 --FILE--
 <?php
-
-require_once 'tests-config.php';
+require_once dirname(__FILE__) . '/tests-config.php';
 require_once 'Net/Gearman/Connection.php';
 
 $s = Net_Gearman_Connection::connect(array_pop($servers));
