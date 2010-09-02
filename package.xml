@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package packagerversion="1.4.2" 
-         version="2.0" 
-         xmlns="http://pear.php.net/dtd/package-2.0" 
-         xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<package packagerversion="1.4.2"
+         version="2.0"
+         xmlns="http://pear.php.net/dtd/package-2.0"
+         xmlns:tasks="http://pear.php.net/dtd/tasks-1.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
                              http://pear.php.net/dtd/tasks-1.0.xsd
                              http://pear.php.net/dtd/package-2.0
@@ -18,22 +18,28 @@
         <email>brian@moonspot.net</email>
         <active>yes</active>
     </lead>
-    <lead>
+    <developer>
+        <name>Till Klampaeckel</name>
+        <user>till</user>
+        <email>till@php.net</email>
+        <active>yes</active>
+    </developer>
+    <developer>
         <name>Joe Stump</name>
         <user>jstump</user>
         <email>joe@joestump.net</email>
         <active>no</active>
-    </lead>
-    <lead>
+    </developer>
+    <developer>
         <name>Chris Goffinet</name>
         <user>lenn0x</user>
         <email>cg@chrisgoffinet.com</email>
         <active>no</active>
-    </lead>
-    <date>2008-01-28</date>
+    </developer>
+    <date>2009-04-22</date>
     <version>
-        <release>0.2.1</release>
-        <api>0.2.1</api>
+        <release>0.2.3</release>
+        <api>0.2.2</api>
     </version>
     <stability>
         <release>alpha</release>
@@ -41,43 +47,33 @@
     </stability>
     <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
     <notes><![CDATA[
-        * Bug #15783: Support simple scalar variables (brianlmoon)
+        * Updated JSON usage to work with PHP 5.2.9 (brianlmoon).
     ]]></notes>
     <contents>
         <dir name="/">
             <dir name="Net">
                 <dir name="Gearman">
-                    <file name="Client.php" role="php">
-                        <tasks:replace from="@package_version@" to="version" type="package-info" />
-                    </file>
-                    <file name="Connection.php" role="php">
-                        <tasks:replace from="@package_version@" to="version" type="package-info" />
-                    </file>
-                    <file name="Exception.php" role="php">
-                        <tasks:replace from="@package_version@" to="version" type="package-info" />
-                    </file>
-                    <file name="Job.php" role="php">
-                        <tasks:replace from="@package_version@" to="version" type="package-info" />
-                    </file>
-                    <file name="Manager.php" role="php">
-                        <tasks:replace from="@package_version@" to="version" type="package-info" />
-                    </file>
-                    <file name="Set.php" role="php">
-                        <tasks:replace from="@package_version@" to="version" type="package-info" />
-                    </file>
-                    <file name="Task.php" role="php">
-                        <tasks:replace from="@package_version@" to="version" type="package-info" />
-                    </file>
-                    <file name="Worker.php" role="php">
-                        <tasks:replace from="@package_version@" to="version" type="package-info" />
-                    </file>
+                    <file name="Client.php"
+                          role="php" />
+                    <file name="Connection.php"
+                          role="php" />
+                    <file name="Exception.php"
+                          role="php" />
+                    <file name="Job.php"
+                          role="php" />
+                    <file name="Manager.php"
+                          role="php" />
+                    <file name="Set.php"
+                          role="php" />
+                    <file name="Task.php"
+                          role="php" />
+                    <file name="Worker.php"
+                          role="php" />
                     <dir name="Job">
-                        <file name="Common.php" role="php">
-                            <tasks:replace from="@package_version@" to="version" type="package-info" />
-                        </file>
-                        <file name="Exception.php" role="php">
-                            <tasks:replace from="@package_version@" to="version" type="package-info" />
-                        </file>
+                        <file name="Common.php"
+                              role="php" />
+                        <file name="Exception.php"
+                              role="php" />
                     </dir>
                 </dir>
             </dir>
@@ -93,13 +89,13 @@
             </dir>
             <dir name="tests" role="test">
                 <file name="001-echo_req.phpt"
-                      role="test" /> 
+                      role="test" />
                 <file name="010-client-call.phpt"
-                      role="test" /> 
+                      role="test" />
                 <file name="012-client-runSet.phpt"
-                      role="test" /> 
+                      role="test" />
                 <file name="tests-config.php"
-                      role="test" /> 
+                      role="test" />
             </dir>
         </dir>
     </contents>
@@ -118,6 +114,137 @@
     </dependencies>
     <phprelease />
     <changelog>
+        <release>
+            <date>2009-03-12</date>
+            <version>
+                <release>0.2.2</release>
+                <api>0.2.2</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
+            <notes><![CDATA[
+                * Upped socket_select() timeout to 60 seconds (as it is in the Perl client).
+                * Added Brian Moon as a developer.
+            ]]></notes>
+            <contents>
+                <dir name="/">
+                    <dir name="Net">
+                        <dir name="Gearman">
+                            <file name="Client.php"
+                                  role="php" />
+                            <file name="Connection.php"
+                                  role="php" />
+                            <file name="Exception.php"
+                                  role="php" />
+                            <file name="Job.php"
+                                  role="php" />
+                            <file name="Manager.php"
+                                  role="php" />
+                            <file name="Set.php"
+                                  role="php" />
+                            <file name="Task.php"
+                                  role="php" />
+                            <file name="Worker.php"
+                                  role="php" />
+                            <dir name="Job">
+                                <file name="Common.php"
+                                      role="php" />
+                                <file name="Exception.php"
+                                      role="php" />
+                            </dir>
+                        </dir>
+                    </dir>
+                    <dir name="examples" role="doc" baseinstalldir="doc/Net_Gearman">
+                        <file name="SQL.php"
+                              role="doc" />
+                        <file name="Sum.php"
+                              role="doc" />
+                        <file name="tasks.php"
+                              role="doc" />
+                        <file name="worker.php"
+                              role="doc" />
+                    </dir>
+                    <dir name="tests" role="test">
+                        <file name="001-echo_req.phpt"
+                              role="test" />
+                        <file name="010-client-call.phpt"
+                              role="test" />
+                        <file name="012-client-runSet.phpt"
+                              role="test" />
+                        <file name="tests-config.php"
+                              role="test" />
+                    </dir>
+                </dir>
+            </contents>
+        </release>
+        <release>
+            <date>2008-01-28</date>
+            <version>
+                <release>0.2.1</release>
+                <api>0.2.1</api>
+            </version>
+            <stability>
+                <release>alpha</release>
+                <api>alpha</api>
+            </stability>
+            <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
+            <notes><![CDATA[
+                * Bug #15783: Support simple scalar variables (brianlmoon)
+            ]]></notes>
+            <contents>
+                <dir name="/">
+                    <dir name="Net">
+                        <dir name="Gearman">
+                            <file name="Client.php"
+                                  role="php" />
+                            <file name="Connection.php"
+                                  role="php" />
+                            <file name="Exception.php"
+                                  role="php" />
+                            <file name="Job.php"
+                                  role="php" />
+                            <file name="Manager.php"
+                                  role="php" />
+                            <file name="Set.php"
+                                  role="php" />
+                            <file name="Task.php"
+                                  role="php" />
+                            <file name="Worker.php"
+                                  role="php" />
+                            <dir name="Job">
+                                <file name="Common.php"
+                                      role="php" />
+                                <file name="Exception.php"
+                                      role="php" />
+                            </dir>
+                        </dir>
+                    </dir>
+                    <dir name="examples" role="doc" baseinstalldir="doc/Net_Gearman">
+                        <file name="SQL.php"
+                              role="doc" />
+                        <file name="Sum.php"
+                              role="doc" />
+                        <file name="tasks.php"
+                              role="doc" />
+                        <file name="worker.php"
+                              role="doc" />
+                    </dir>
+                    <dir name="tests" role="test">
+                        <file name="001-echo_req.phpt"
+                              role="test" />
+                        <file name="010-client-call.phpt"
+                              role="test" />
+                        <file name="012-client-runSet.phpt"
+                              role="test" />
+                        <file name="tests-config.php"
+                              role="test" />
+                    </dir>
+                </dir>
+            </contents>
+        </release>
         <release>
             <date>2008-11-16</date>
             <version>
@@ -175,13 +302,13 @@
                     </dir>
                     <dir name="tests" role="test">
                         <file name="001-echo_req.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="010-client-call.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="012-client-runSet.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="tests-config.php"
-                              role="test" /> 
+                              role="test" />
                     </dir>
                 </dir>
             </contents>
@@ -198,7 +325,7 @@
             </stability>
             <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
             <notes><![CDATA[
-                * Fixed a bug in writing to the socket so it keeps writing until all is written 
+                * Fixed a bug in writing to the socket so it keeps writing until all is written
             ]]></notes>
             <contents>
                 <dir name="/">
@@ -240,13 +367,13 @@
                     </dir>
                     <dir name="tests" role="test">
                         <file name="001-echo_req.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="010-client-call.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="012-client-runSet.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="tests-config.php"
-                              role="test" /> 
+                              role="test" />
                     </dir>
                 </dir>
             </contents>
@@ -308,13 +435,13 @@
                     </dir>
                     <dir name="tests" role="test">
                         <file name="001-echo_req.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="010-client-call.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="012-client-runSet.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="tests-config.php"
-                              role="test" /> 
+                              role="test" />
                     </dir>
                 </dir>
             </contents>
@@ -378,13 +505,13 @@
                     </dir>
                     <dir name="tests" role="test">
                         <file name="001-echo_req.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="010-client-call.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="012-client-runSet.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="tests-config.php"
-                              role="test" /> 
+                              role="test" />
                     </dir>
                 </dir>
             </contents>
@@ -444,13 +571,13 @@
                     </dir>
                     <dir name="tests" role="test">
                         <file name="001-echo_req.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="010-client-call.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="012-client-runSet.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="tests-config.php"
-                              role="test" /> 
+                              role="test" />
                     </dir>
                 </dir>
             </contents>
@@ -508,13 +635,13 @@
                     </dir>
                     <dir name="tests" role="test">
                         <file name="001-echo_req.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="010-client-call.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="012-client-runSet.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="tests-config.php"
-                              role="test" /> 
+                              role="test" />
                     </dir>
                 </dir>
             </contents>
@@ -577,13 +704,13 @@
                     </dir>
                     <dir name="tests" role="test">
                         <file name="001-echo_req.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="010-client-call.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="012-client-runSet.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="tests-config.php"
-                              role="test" /> 
+                              role="test" />
                     </dir>
                 </dir>
             </contents>
@@ -644,13 +771,13 @@
                     </dir>
                     <dir name="tests" role="test">
                         <file name="001-echo_req.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="010-client-call.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="012-client-runSet.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="tests-config.php"
-                              role="test" /> 
+                              role="test" />
                     </dir>
                 </dir>
             </contents>
@@ -711,13 +838,13 @@
                     </dir>
                     <dir name="tests" role="test">
                         <file name="001-echo_req.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="010-client-call.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="012-client-runSet.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="tests-config.php"
-                              role="test" /> 
+                              role="test" />
                     </dir>
                 </dir>
             </contents>
@@ -774,13 +901,13 @@
                     </dir>
                     <dir name="tests" role="test">
                         <file name="001-echo_req.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="010-client-call.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="012-client-runSet.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="tests-config.php"
-                              role="test" /> 
+                              role="test" />
                     </dir>
                 </dir>
             </contents>
@@ -837,13 +964,13 @@
                     </dir>
                     <dir name="tests" role="test">
                         <file name="001-echo_req.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="010-client-call.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="012-client-runSet.phpt"
-                              role="test" /> 
+                              role="test" />
                         <file name="tests-config.php"
-                              role="test" /> 
+                              role="test" />
                     </dir>
                 </dir>
             </contents>
