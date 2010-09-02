@@ -213,7 +213,8 @@ class Net_Gearman_Task
      * @param string  $uniq The unique id of the job 
      * @param integer $type Type of job to run task as
      *
-     * @return      void
+     * @return Net_Gearman_Task
+     * @throws Net_Gearman_Exception
      */
     public function __construct($func, $arg, $uniq = null,
                                 $type = self::JOB_NORMAL) 
@@ -225,6 +226,13 @@ class Net_Gearman_Task
             $this->uniq = md5($func . serialize($arg) . $type);
         } else {
             $this->uniq = $uniq;
+        }
+
+        $type = (int) $type;
+        if ($type > 6) {
+            throw new Net_Gearman_Exception(
+                "Unknown job type: {$type}. Please see Net_Gearman_Task::JOB_* constants."
+            );
         }
 
         $this->type = $type; 
