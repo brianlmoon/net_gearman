@@ -2,6 +2,7 @@
 Net_Gearman_Set, Net_Gearman_Client::runSet()
 --SKIPIF--
 <?php
+die('skip THIS TEST IS BROKEN.');
 if (!file_exists(dirname(__FILE__) . '/tests-config.php')) {
     die('skip This test requires a test-config.php file.');
 }
