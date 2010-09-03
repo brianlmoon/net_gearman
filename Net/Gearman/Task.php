@@ -266,6 +266,16 @@ class Net_Gearman_Task
     }
 
     /**
+     * Return all callbacks.
+     *
+     * @return array
+     */
+    public function getCallbacks()
+    {
+        return $this->callback;
+    }
+
+    /**
      * Run the complete callbacks
      *
      * Complete callbacks are passed the name of the job, the handle of the 
