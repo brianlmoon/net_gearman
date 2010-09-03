@@ -361,5 +361,3 @@ class Net_Gearman_Task
         }
     }
 }
-
-?>
