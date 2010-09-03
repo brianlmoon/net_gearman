@@ -317,10 +317,17 @@ class Net_Gearman_Task
     /**
      * Run the failure callbacks
      *
-     * Failure callbacks are passed the task object job that failed
+     * Failure callbacks are passed the task object job that failed:
+     * <code>
+     * // example callback
+     * function failCallback(Net_Gearman_Task $task) {
+     *     var_dump($task);
+     * }
+     * $task->attachCallback('failCallback', Net_Gearman_Task::TASK_FAIL);
+     * </code>
      *
      * @return void
-     * @see Net_Gearman_Task::attachCallback()
+     * @see    Net_Gearman_Task::attachCallback()
      */
     public function fail()
     {
