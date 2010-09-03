@@ -27,7 +27,7 @@ $client->runSet($set);
 
 $superSum = 0;
 foreach ($set as $task) {
-    $superSum += $task->result->sum;
+    $superSum += $task->result["result"];
 }
 
 var_dump($superSum);
