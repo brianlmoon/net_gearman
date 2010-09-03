@@ -139,5 +139,3 @@ abstract class Net_Gearman_Job_Common
         ));
     }
 }
-
-?>

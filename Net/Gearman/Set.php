@@ -212,5 +212,3 @@ class Net_Gearman_Set implements IteratorAggregate, Countable
         return $this->tasksCount;
     }
 }
-
-?>

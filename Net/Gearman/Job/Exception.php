@@ -40,7 +40,4 @@ require_once 'Net/Gearman/Exception.php';
  */
 class Net_Gearman_Job_Exception extends Net_Gearman_Exception
 {
-
 }
-
-?>

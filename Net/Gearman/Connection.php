@@ -151,9 +151,9 @@ class Net_Gearman_Connection
 
         $start = microtime(true);
         do {
-            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+            $socket           = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
             $socket_connected = @socket_connect($socket, $host, $port);
-            $timeLeft = ((microtime(true) - $start) * 1000);
+            $timeLeft         = ((microtime(true) - $start) * 1000);
             if ($socket_connected) {
                 socket_set_nonblock($socket);
                 socket_set_option($socket, SOL_TCP, 1, 1);
@@ -161,8 +161,10 @@ class Net_Gearman_Connection
         } while (!$socket_connected && $timeLeft < $timeout);
 
         if (!$socket_connected) {
-            $errno = socket_last_error($socket);
+
+            $errno  = socket_last_error($socket);
             $errstr	= socket_strerror($errno);
+
             throw new Net_Gearman_Exception(
                 "Can't connect to server ($errno: $errstr)"
             );
@@ -233,7 +235,7 @@ class Net_Gearman_Connection
         } while ($written < $cmdLength);
 
         if ($error === true) {
-            $errno = socket_last_error($socket);
+            $errno  = socket_last_error($socket);
             $errstr	= socket_strerror($errno);
             throw new Net_Gearman_Exception(
                 "Could not write command to socket ($errno: $errstr)"
@@ -391,9 +393,8 @@ class Net_Gearman_Connection
 
         if (self::$multiByteSupport & 2) {
             return mb_strlen($value, '8bit');
-        } else {
-            return strlen($value);
         }
+        return strlen($value);
     }
 
     /**
