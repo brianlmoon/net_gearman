@@ -108,6 +108,13 @@ class Net_Gearman_Task
     public $result = '';
 
     /**
+     * Connection used for this task
+     *
+     * @var int $connection
+     */
+    public $connection = 0;
+
+    /**
      * Callbacks registered for each state
      *
      * @var array $callback

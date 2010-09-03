@@ -94,6 +94,90 @@ class Net_Gearman_Client
     }
 
     /**
+     * Get the status of a task on a particular server.
+     *
+     * @param object $task The task to get the status for
+     * @return array An associative array containing information about the provided task handle. Returns false if the request failed.
+     */
+    public function getStatusByTask($task)
+    {
+
+        if (empty($task->connection)) {
+            throw new Net_Gearman_Exception('Unknown connection for task in getStatusByTask()');
+        }
+
+        $status = $this->getStatus($task->connection, $task->handle);
+
+        return $status;
+    }
+
+    /**
+     * Get the status of a task on a particular server.
+     *
+     * @param  string $handle The handle returned when the task was created
+     * @return array An associative array containing information about the provided task handle. Returns false if the request failed.
+     */
+    public function getStatusByHandle($handle)
+    {
+
+        $status = false;
+
+        foreach($this->conn as $s){
+
+            $status = $this->getStatus($s, $handle);
+
+            if($status){
+                break;
+            }
+
+        }
+
+        return $status;
+    }
+
+    /**
+     * Private function to handle the status communication
+     *
+     * @param   resource    $s      A server connection
+     * @param   string      $handle The handle returned when the task was created
+     * @return  mixed               An associative array containing information about the provided task handle. Returns false if the request failed.
+     */
+    private function getStatus($s, $handle)
+    {
+
+        $params = array(
+            'handle' => $handle,
+        );
+
+        Net_Gearman_Connection::send($s, 'get_status', $params);
+
+        $read = array($s);
+        $write = null;
+        $except = null;
+
+        socket_select($read, $write, $except, 10);
+
+        foreach ($read as $socket) {
+            $resp = Net_Gearman_Connection::read($socket);
+
+            if (isset($resp['function'], $resp['data'])
+                && ($resp['function'] == 'status_res')
+            ) {
+                if($resp["data"]["denominator"] > 0){
+                    $resp["data"]["percent_complete"] = round(($resp["data"]["numerator"] / $resp["data"]["denominator"]) * 100, 0);
+                } elseif($resp["data"]["running"]) {
+                    $resp["data"]["percent_complete"] = 0;
+                } else {
+                    $resp["data"]["percent_complete"] = null;
+                }
+                return $resp['data'];
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Get a connection to a Gearman server
      *
      * @param string  $uniq The unique id of the job
@@ -194,6 +278,8 @@ class Net_Gearman_Client
         }
 
         array_push(Net_Gearman_Connection::$waiting[(int)$s], $task);
+
+        $task->connection = $s;
     }
 
     /**
