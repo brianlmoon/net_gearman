@@ -235,8 +235,11 @@ class Net_Gearman_Client
 
 
             if ($t < $totalTasks) {
+
                 $k = $taskKeys[$t];
+
                 $this->submitTask($set->tasks[$k]);
+
                 if ($set->tasks[$k]->type == Net_Gearman_Task::JOB_BACKGROUND ||
                     $set->tasks[$k]->type == Net_Gearman_Task::JOB_HIGH_BACKGROUND ||
                     $set->tasks[$k]->type == Net_Gearman_Task::JOB_LOW_BACKGROUND) {
@@ -251,6 +254,7 @@ class Net_Gearman_Client
             $write  = null;
             $except = null;
             $read   = $this->conn;
+
             socket_select($read, $write, $except, $socket_timeout);
             foreach ($read as $socket) {
                 $resp = Net_Gearman_Connection::read($socket);
@@ -269,10 +273,17 @@ class Net_Gearman_Client
      * @param object   $tasks The tasks being ran
      * 
      * @return void
-     * @throws Net_Gearman_Exception
+     * @throws Net_Gearman_Exception When $s is not a resource.
+     * @throws Net_Gearman_Exception When an response indicates that an error occured.
+     * @throws Net_Gearman_Exception When an invalid function was called.
      */
-    protected function handleResponse($resp, $s, Net_Gearman_Set $tasks) 
+    protected function handleResponse(array $resp, $s, Net_Gearman_Set $tasks) 
     {
+        if (!is_resource($s)) {
+            throw new Net_Gearman_Exception(
+                sprintf("Parameter must be of type 'resource', '%s' given", gettype($s))
+            );
+        }
         if (isset($resp['data']['handle']) && 
             $resp['function'] != 'job_created') {
             $task = $tasks->getTask($resp['data']['handle']);
