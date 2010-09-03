@@ -67,16 +67,13 @@ class Net_Gearman_Client
      * @param array   $servers An array of servers or a single server
      * @param integer $timeout Timeout in microseconds
      * 
-     * @return void
-     * @throws Net_Gearman_Exception
-     * @see Net_Gearman_Connection
+     * @return $this
+     * @see    Net_Gearman_Connection
      */
-    public function __construct($servers, $timeout = 1000)
+    public function __construct(array $servers = null, $timeout = 1000)
     {
-        if (!is_array($servers) && strlen($servers)) {
-            $servers = array($servers);
-        } elseif (is_array($servers) && !count($servers)) {
-            throw new Net_Gearman_Exception('Invalid servers specified');
+        if ($servers === null || (is_array($servers) && empty($servers))) {
+            $servers = array('localhost:4730');
         }
 
         $this->servers = $servers;
@@ -127,7 +124,7 @@ class Net_Gearman_Client
      */
     public function __call($func, array $args = array())
     {
-        $send = "";
+        $send = array();
         if (isset($args[0]) && !empty($args[0])) {
             $send = $args[0];
         }
