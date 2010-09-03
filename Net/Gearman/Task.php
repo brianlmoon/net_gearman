@@ -216,7 +216,7 @@ class Net_Gearman_Task
      * @return Net_Gearman_Task
      * @throws Net_Gearman_Exception
      */
-    public function __construct($func, $arg, $uniq = null,
+    public function __construct($func, array $arg = null, $uniq = null,
                                 $type = self::JOB_NORMAL) 
     {
         $this->func = $func;
