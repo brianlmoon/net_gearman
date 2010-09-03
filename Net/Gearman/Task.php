@@ -244,16 +244,25 @@ class Net_Gearman_Task
      * @param callback $callback A valid PHP callback
      * @param integer  $type     Type of callback 
      * 
-     * @return void
-     * @throws Net_Gearman_Exception
+     * @return $this
+     * @throws Net_Gearman_Exception When the callback is invalid.
+     * @throws Net_Gearman_Exception When the callback's type is invalid.
      */
     public function attachCallback($callback, $type = self::TASK_COMPLETE) 
     {
         if (!is_callable($callback)) {
             throw new Net_Gearman_Exception('Invalid callback specified'); 
-        } 
+        }
+
+        if (!in_array(
+            $type,
+            array(self::TASK_COMPLETE, self::TASK_FAIL, self::TASK_STATUS)
+        )) {
+            throw new Net_Gearman_Exception('Invalid callback type specified');
+        }
 
         $this->callback[$type][] = $callback;
+        return $this;
     }
 
     /**
