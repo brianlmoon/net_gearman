@@ -143,8 +143,8 @@ class Net_Gearman_Client
      *
      * @param object $task Task to submit to Gearman
      * 
-     * @return      void
-     * @see         Net_Gearman_Task, Net_Gearman_Client::runSet()
+     * @return void
+     * @see    Net_Gearman_Task, Net_Gearman_Client::runSet()
      */
     protected function submitTask(Net_Gearman_Task $task)
     {
@@ -190,6 +190,8 @@ class Net_Gearman_Client
             Net_Gearman_Connection::$waiting[(int)$s] = array();
         }
 
+        $task->server = (int) $s;
+
         array_push(Net_Gearman_Connection::$waiting[(int)$s], $task);
     }
 
@@ -200,7 +202,8 @@ class Net_Gearman_Client
      * @param int    $timeout Time in seconds for the socket timeout. Max is 10 seconds
      * 
      * @return void
-     * @see Net_Gearman_Set, Net_Gearman_Task
+     * @see    Net_Gearman_Set, Net_Gearman_Task
+     * @uses   self::submitTask()
      */
     public function runSet(Net_Gearman_Set $set, $timeout = null)
     {
