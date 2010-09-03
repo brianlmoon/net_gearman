@@ -108,6 +108,27 @@ class Net_Gearman_TaskTest extends PHPUnit_Framework_TestCase
 
         unset($GLOBALS['Net_Gearman_TaskTest']);
     }
+
+    /**
+     * See that task has handle and server assigned.
+     *
+     * @return void
+     */
+    public function testTaskStatus()
+    {
+        $client = new Net_Gearman_Client();
+ 
+        $task       = new Net_Gearman_Task('Reverse', range(1,5));
+        $task->type = Net_Gearman_Task::JOB_BACKGROUND;
+ 
+        $set = new Net_Gearman_Set();
+        $set->addTask($task);
+ 
+        $client->runSet($set);
+ 
+        $this->assertNotEquals('', $task->handle);
+        $this->assertNotEquals('', $task->server);
+    }
 }
 
 /**
