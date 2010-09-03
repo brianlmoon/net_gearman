@@ -220,7 +220,8 @@ class Net_Gearman_Task
      * @param string  $uniq The unique id of the job
      * @param integer $type Type of job to run task as
      *
-     * @return      void
+     * @return Net_Gearman_Task
+     * @throws Net_Gearman_Exception
      */
     public function __construct($func, $arg, $uniq = null,
                                 $type = self::JOB_NORMAL)
@@ -235,6 +236,20 @@ class Net_Gearman_Task
         }
 
         $this->type = $type;
+
+        if (!in_array(
+            $type,
+            array(self::JOB_NORMAL, self::JOB_BACKGROUND, self::JOB_HIGH,
+                  self::JOB_HIGH_BACKGROUND, self::JOB_LOW, self::JOB_LOW_BACKGROUND)
+        )) {
+
+            throw new Net_Gearman_Exception(
+                "Unknown job type: {$type}. Please see Net_Gearman_Task::JOB_* constants."
+            );
+        }
+
+        $this->type = $type;
+
     }
 
     /**
@@ -243,8 +258,9 @@ class Net_Gearman_Task
      * @param callback $callback A valid PHP callback
      * @param integer  $type     Type of callback
      *
-     * @return void
-     * @throws Net_Gearman_Exception
+     * @return $this
+     * @throws Net_Gearman_Exception When the callback is invalid.
+     * @throws Net_Gearman_Exception When the callback's type is invalid.
      */
     public function attachCallback($callback, $type = self::TASK_COMPLETE)
     {
@@ -252,7 +268,25 @@ class Net_Gearman_Task
             throw new Net_Gearman_Exception('Invalid callback specified');
         }
 
+        if (!in_array(
+            $type,
+            array(self::TASK_COMPLETE, self::TASK_FAIL, self::TASK_STATUS)
+        )) {
+            throw new Net_Gearman_Exception('Invalid callback type specified');
+        }
+
         $this->callback[$type][] = $callback;
+        return $this;
+    }
+
+    /**
+     * Return all callbacks.
+     *
+     * @return array
+     */
+    public function getCallbacks()
+    {
+        return $this->callback;
     }
 
     /**
