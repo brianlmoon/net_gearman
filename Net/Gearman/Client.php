@@ -97,7 +97,7 @@ class Net_Gearman_Client
      *
      * @return resource A connection to a Gearman server
      */
-    protected function getConnection($uniq=null)
+    protected function getConnection($uniq = null)
     {
         $conn = null;
 
