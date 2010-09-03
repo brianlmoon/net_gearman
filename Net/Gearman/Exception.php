@@ -38,5 +38,3 @@ require_once 'PEAR/Exception.php';
 class Net_Gearman_Exception extends PEAR_Exception
 {
 }
-
-?>
