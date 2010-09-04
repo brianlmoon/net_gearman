@@ -210,19 +210,35 @@ class Net_Gearman_Client
      * Fire off a background task with the given arguments
      *
      * @param string  $func Name of job to run
-     * @param array   $args Arguments for job
-     * @param integer $type Type of job to run task as
-     *
-     * @return mixed  For background tasks, the task object is returned.
-     *                For foreground tasks, the result is returned.
+     * @param array   $args Arguments for for the magic method call
+     *                      First element is the job args.
+     *                      Second element is an optional task type
+     * @return mixed        For background tasks, the task object is returned.
+     *                      For foreground tasks, the result is returned.
      *
      * @see Net_Gearman_Task
      */
-    public function __call($func, $args, $type = Net_Gearman_Task::JOB_BACKGROUND)
+    public function __call($func, array $args)
     {
 
-        $task = new Net_Gearman_Task($func, $args, null, $type);
-        $this->submitTask($task);
+        if(!isset($args[0])){
+            throw new Net_Gearman_Exception('Invalid job arguments');
+        }
+
+        $job_args = $args[0];
+
+        if(isset($args[1])){
+            $type = $args[1];
+        } else {
+            $type = Net_Gearman_Task::JOB_BACKGROUND;
+        }
+
+        $task = new Net_Gearman_Task($func, $job_args, null, $type);
+
+        $set = new Net_Gearman_Set();
+        $set->addTask($task);
+
+        $this->runSet($set);
 
         if($type == Net_Gearman_Task::JOB_BACKGROUND ||
            $type == Net_Gearman_Task::JOB_HIGH_BACKGROUND ||
