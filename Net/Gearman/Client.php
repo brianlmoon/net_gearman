@@ -71,9 +71,11 @@ class Net_Gearman_Client
      * @throws Net_Gearman_Exception
      * @see Net_Gearman_Connection
      */
-    public function __construct($servers, $timeout = 1000)
+    public function __construct($servers = null, $timeout = 1000)
     {
-        if (!is_array($servers) && strlen($servers)) {
+        if (is_null($servers)){
+            $servers = array("localhost");
+        } elseif (!is_array($servers) && strlen($servers)) {
             $servers = array($servers);
         } elseif (is_array($servers) && !count($servers)) {
             throw new Net_Gearman_Exception('Invalid servers specified');
@@ -81,6 +83,10 @@ class Net_Gearman_Client
 
         $this->servers = $servers;
         foreach ($this->servers as $key => $server) {
+            $server = trim($server);
+            if(empty($server)){
+                throw new Net_Gearman_Exception('Invalid servers specified');
+            }
             $conn = Net_Gearman_Connection::connect($server, $timeout);
             if (!Net_Gearman_Connection::isConnected($conn)) {
                 unset($this->servers[$key]);
