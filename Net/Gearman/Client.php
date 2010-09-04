@@ -23,6 +23,7 @@
 
 require_once 'Net/Gearman/Connection.php';
 require_once 'Net/Gearman/Set.php';
+require_once 'Net/Gearman/Task.php';
 
 /**
  * A client for submitting jobs to Gearman
