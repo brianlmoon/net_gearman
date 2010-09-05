@@ -135,9 +135,11 @@ class Net_Gearman_Worker
      * @throws Net_Gearman_Exception
      * @see Net_Gearman_Connection
      */
-    public function __construct($servers, $id = "")
+    public function __construct($servers = null, $id = "")
     {
-        if (!is_array($servers) && strlen($servers)) {
+        if (is_null($servers)){
+            $servers = array("localhost");
+        } elseif (!is_array($servers) && strlen($servers)) {
             $servers = array($servers);
         } elseif (is_array($servers) && !count($servers)) {
             throw new Net_Gearman_Exception('Invalid servers specified');
