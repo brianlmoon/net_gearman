@@ -63,7 +63,7 @@ class Net_Gearman_Manager
     /**
      * Constructor
      *
-     * @param string  $server  Host and port (e.g. 'localhost:7003')
+     * @param string  $server  Host and port (e.g. 'localhost:4703')
      * @param integer $timeout Connection timeout
      *
      * @throws Net_Gearman_Exception
