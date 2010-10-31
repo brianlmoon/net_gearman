@@ -5,15 +5,15 @@
  *
  * PHP version 5.1.0+
  *
- * LICENSE: This source file is subject to the New BSD license that is 
+ * LICENSE: This source file is subject to the New BSD license that is
  * available through the world-wide-web at the following URI:
- * http://www.opensource.org/licenses/bsd-license.php. If you did not receive  
- * a copy of the New BSD License and are unable to obtain it through the web, 
+ * http://www.opensource.org/licenses/bsd-license.php. If you did not receive
+ * a copy of the New BSD License and are unable to obtain it through the web,
  * please send a note to license@php.net so we can mail you a copy immediately.
  *
  * @category  Net
  * @package   Net_Gearman
- * @author    Joe Stump <joe@joestump.net> 
+ * @author    Joe Stump <joe@joestump.net>
  * @copyright 2007-2008 Digg.com, Inc.
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
  * @version   CVS: $Id$
@@ -28,7 +28,7 @@ require_once 'Net/Gearman/Job/Exception.php';
  *
  * @category  Net
  * @package   Net_Gearman
- * @author    Joe Stump <joe@joestump.net> 
+ * @author    Joe Stump <joe@joestump.net>
  * @copyright 2007-2008 Digg.com, Inc.
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
  * @version   Release: @package_version@
@@ -42,12 +42,12 @@ abstract class Net_Gearman_Job_Common
      *
      * @var string $handle
      */
-    protected $handle = ''; 
-   
+    protected $handle = '';
+
     /**
      * Connection to Gearman
      *
-     * @var resource $conn           
+     * @var resource $conn
      * @see Net_Gearman_Connection
      */
     protected $conn = null;
@@ -63,7 +63,7 @@ abstract class Net_Gearman_Job_Common
      * @param resource $conn   Connection to communicate with
      * @param string   $handle Job ID / handle for this job
      * @param array $initParams initialization parameters
-     * 
+     *
      * @return void
      */
     public function __construct($conn, $handle, array $initParams=array())
@@ -77,7 +77,7 @@ abstract class Net_Gearman_Job_Common
      * Run your job here
      *
      * @param array $arg Arguments passed from the client
-     * 
+     *
      * @return void
      * @throws Net_Gearman_Exception
      */
@@ -92,13 +92,13 @@ abstract class Net_Gearman_Job_Common
      * @return void
      * @see Net_Gearman_Connection::send()
      */
-    public function status($numerator, $denominator) 
+    public function status($numerator, $denominator)
     {
         Net_Gearman_Connection::send($this->conn, 'work_status', array(
             'handle' => $this->handle,
             'numerator' => $numerator,
             'denominator' => $denominator
-        ));    
+        ));
     }
 
     /**
@@ -109,16 +109,22 @@ abstract class Net_Gearman_Job_Common
      * different languages. You should always pass an array as the result to
      * this function.
      *
-     * @param array $result Result of your job
-     * 
+     * @param mixed $result Result of your job
+     *
      * @return void
      * @see Net_Gearman_Connection::send()
      */
-    public function complete(array $result)
+    public function complete($result)
     {
+        // if we don't have a scalar
+        // json encode the data
+        if(!is_scalar($result)){
+            $result = json_encode($result);
+        }
+
         Net_Gearman_Connection::send($this->conn, 'work_complete', array(
             'handle' => $this->handle,
-            'result' => json_encode($result)
+            'result' => $result
         ));
     }
 

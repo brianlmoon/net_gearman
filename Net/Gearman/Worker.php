@@ -339,9 +339,6 @@ class Net_Gearman_Worker
         try {
             $this->start($handle, $name, $arg);
             $res = $job->run($arg);
-            if (!is_array($res)) {
-                $res = array('result' => $res);
-            }
 
             $job->complete($res);
             $this->complete($handle, $name, $res);
@@ -402,11 +399,11 @@ class Net_Gearman_Worker
      *
      * @param string $handle The job's Gearman handle
      * @param string $job    The name of the job
-     * @param array  $result The job's returned result
+     * @param mixed  $result The job's returned result
      *
      * @return void
      */
-    protected function complete($handle, $job, array $result)
+    protected function complete($handle, $job, $result)
     {
         if (count($this->callback[self::JOB_COMPLETE]) == 0) {
             return; // No callbacks to run
