@@ -75,6 +75,14 @@ class Net_Gearman_Task
     public $handle = '';
 
     /**
+     * Server used for the task
+     *
+     * @var string $server
+     * @see Net_Gearman_Client
+     */
+    public $server = '';
+
+    /**
      * The unique identifier for this job
      *
      * Keep in mind that a unique job is only unique to the job server it is
@@ -106,13 +114,6 @@ class Net_Gearman_Task
      * @var object $result
      */
     public $result = '';
-
-    /**
-     * Connection used for this task
-     *
-     * @var int $connection
-     */
-    public $connection = 0;
 
     /**
      * Callbacks registered for each state
@@ -216,7 +217,7 @@ class Net_Gearman_Task
      * Constructor
      *
      * @param string  $func Name of job to run
-     * @param mixed   $arg  List of arguments for job
+     * @param mixed   $arg  Arguments for job
      * @param string  $uniq The unique id of the job
      * @param integer $type Type of job to run task as
      *

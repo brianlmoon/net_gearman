@@ -56,6 +56,13 @@ class Net_Gearman_Client
     protected $servers = array();
 
     /**
+     * A list of connections by server name
+     *
+     * @var array $serverConnections A list of connections by server name
+     */
+    protected $serversConnections = array();
+
+    /**
      * The timeout for Gearman connections
      *
      * @var integer $timeout
@@ -95,89 +102,58 @@ class Net_Gearman_Client
             }
 
             $this->conn[] = $conn;
+            $this->serverConnections[(int)$conn] = $server;
         }
 
         $this->timeout = $timeout;
     }
 
     /**
-     * Get the status of a task on a particular server.
-     *
-     * @param object $task The task to get the status for
-     * @return array An associative array containing information about the provided task handle. Returns false if the request failed.
-     */
-    public function getStatusByTask($task)
-    {
-
-        if (empty($task->connection)) {
-            throw new Net_Gearman_Exception('Unknown connection for task in getStatusByTask()');
-        }
-
-        $status = $this->getStatus($task->connection, $task->handle);
-
-        return $status;
-    }
-
-    /**
-     * Get the status of a task on a particular server.
-     *
-     * @param  string $handle The handle returned when the task was created
-     * @return array An associative array containing information about the provided task handle. Returns false if the request failed.
-     */
-    public function getStatusByHandle($handle)
-    {
-
-        $status = false;
-
-        foreach($this->conn as $s){
-
-            $status = $this->getStatus($s, $handle);
-
-            if($status){
-                break;
-            }
-
-        }
-
-        return $status;
-    }
-
-    /**
      * Private function to handle the status communication
      *
-     * @param   resource    $s      A server connection
-     * @param   string      $handle The handle returned when the task was created
-     * @return  mixed               An associative array containing information about the provided task handle. Returns false if the request failed.
+     * @param  string $handle The handle returned when the task was created
+     * @param  string $server The server name(:port) this task was assigned to.
+     *                        If not set, all servers in the server list will be checked
+     * @return mixed          An associative array containing information about
+     *                        the provided task handle. Returns false if the request failed.
      */
-    private function getStatus($s, $handle)
+    private function getStatus($handle, $server = null)
     {
 
         $params = array(
             'handle' => $handle,
         );
 
-        Net_Gearman_Connection::send($s, 'get_status', $params);
+        if(!is_null($server)){
+            $server_list = array($server);
+        } else {
+            $server_list = $this->servers;
+        }
 
-        $read = array($s);
-        $write = null;
-        $except = null;
+        foreach($server_list as $s) {
+            Net_Gearman_Connection::send($s, 'get_status', $params);
 
-        socket_select($read, $write, $except, 10);
+            $read = array($s);
+            $write = null;
+            $except = null;
 
-        foreach ($read as $socket) {
-            $resp = Net_Gearman_Connection::read($socket);
+            socket_select($read, $write, $except, 10);
 
-            if (isset($resp['function'], $resp['data'])
-                && ($resp['function'] == 'status_res')
-            ) {
-                if($resp["data"]["denominator"] > 0){
-                    $resp["data"]["percent_complete"] = round(($resp["data"]["numerator"] / $resp["data"]["denominator"]) * 100, 0);
-                } elseif($resp["data"]["running"]) {
-                    $resp["data"]["percent_complete"] = 0;
-                } else {
-                    $resp["data"]["percent_complete"] = null;
+            foreach ($read as $socket) {
+                $resp = Net_Gearman_Connection::read($socket);
+
+                if (isset($resp['function'], $resp['data'])
+                    && ($resp['function'] == 'status_res')
+                ) {
+                    if($resp["data"]["denominator"] > 0){
+                        $resp["data"]["percent_complete"] = round(($resp["data"]["numerator"] / $resp["data"]["denominator"]) * 100, 0);
+                    } elseif($resp["data"]["running"]) {
+                        $resp["data"]["percent_complete"] = 0;
+                    } else {
+                        $resp["data"]["percent_complete"] = null;
+                    }
+                    return $resp['data'];
                 }
-                return $resp['data'];
             }
         }
 
@@ -214,8 +190,10 @@ class Net_Gearman_Client
      * @param array   $args Arguments for for the magic method call
      *                      First element is the job args.
      *                      Second element is an optional task type
-     * @return mixed        For background tasks, the task object is returned.
-     *                      For foreground tasks, the result is returned.
+     * @param integer $type Type of job to run task as
+     *
+     * @return mixed  For background tasks, the task object is returned.
+     *                For foreground tasks, the result is returned.
      *
      * @see Net_Gearman_Task
      */
@@ -309,7 +287,7 @@ class Net_Gearman_Client
 
         array_push(Net_Gearman_Connection::$waiting[(int)$s], $task);
 
-        $task->connection = $s;
+        $task->server = $this->serverConnections[(int)$s];
     }
 
     /**
