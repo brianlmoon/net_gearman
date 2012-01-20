@@ -23,7 +23,6 @@
 
 require_once 'Net/Gearman/Connection.php';
 require_once 'Net/Gearman/Set.php';
-require_once 'Net/Gearman/Task.php';
 
 /**
  * A client for submitting jobs to Gearman
@@ -36,7 +35,6 @@ require_once 'Net/Gearman/Task.php';
  * @author    Joe Stump <joe@joestump.net>
  * @copyright 2007-2008 Digg.com, Inc.
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @version   Release: @package_version@
  * @link      http://www.danga.com/gearman/
  */
 class Net_Gearman_Client
@@ -56,13 +54,6 @@ class Net_Gearman_Client
     protected $servers = array();
 
     /**
-     * A list of connections by server name
-     *
-     * @var array $serverConnections A list of connections by server name
-     */
-    protected $serversConnections = array();
-
-    /**
      * The timeout for Gearman connections
      *
      * @var integer $timeout
@@ -79,11 +70,9 @@ class Net_Gearman_Client
      * @throws Net_Gearman_Exception
      * @see Net_Gearman_Connection
      */
-    public function __construct($servers = null, $timeout = 1000)
+    public function __construct($servers, $timeout = 1000)
     {
-        if (is_null($servers)){
-            $servers = array("localhost");
-        } elseif (!is_array($servers) && strlen($servers)) {
+        if (!is_array($servers) && strlen($servers)) {
             $servers = array($servers);
         } elseif (is_array($servers) && !count($servers)) {
             throw new Net_Gearman_Exception('Invalid servers specified');
@@ -91,21 +80,48 @@ class Net_Gearman_Client
 
         $this->servers = $servers;
         foreach ($this->servers as $key => $server) {
-            $server = trim($server);
-            if(empty($server)){
-                throw new Net_Gearman_Exception('Invalid servers specified');
-            }
+            $conn = null;
+            try{
             $conn = Net_Gearman_Connection::connect($server, $timeout);
+            } catch(Net_Gearman_Exception $e) {
+                trigger_error($e->getMessage(). " server: $server", E_USER_WARNING);
+            }
             if (!Net_Gearman_Connection::isConnected($conn)) {
                 unset($this->servers[$key]);
                 continue;
             }
 
             $this->conn[] = $conn;
-            $this->serverConnections[(int)$conn] = $server;
         }
 
         $this->timeout = $timeout;
+    }
+
+    /**
+     * Get a connection to a Gearman server
+     *
+     * @param string  $uniq The unique id of the job
+     *
+     * @return resource A connection to a Gearman server
+     */
+    protected function getConnection($uniq = null)
+    {
+        $conn = null;
+
+        if(count($this->conn) > 0){
+
+        if(count($this->conn) === 1){
+            $conn = current($this->conn);
+        } elseif($uniq === null){
+            $conn = $this->conn[array_rand($this->conn)];
+        } else {
+            $server = ord(substr(md5($uniq), -1)) % count($this->conn);
+            $conn = $this->conn[$server];
+        }
+
+        }
+
+        return $conn;
     }
 
     /**
@@ -161,76 +177,28 @@ class Net_Gearman_Client
     }
 
     /**
-     * Get a connection to a Gearman server
-     *
-     * @param string  $uniq The unique id of the job
-     *
-     * @return resource A connection to a Gearman server
-     */
-    protected function getConnection($uniq = null)
-    {
-        $conn = null;
-
-        if(count($this->conn) === 1){
-            $conn = current($this->conn);
-        } elseif($uniq === null){
-            $conn = $this->conn[array_rand($this->conn)];
-        } else {
-            $server = ord(substr(md5($uniq), -1)) % count($this->conn);
-            $conn = $this->conn[$server];
-        }
-
-        return $conn;
-    }
-
-    /**
      * Fire off a background task with the given arguments
      *
      * @param string  $func Name of job to run
-     * @param array   $args Arguments for for the magic method call
-     *                      First element is the job args.
-     *                      Second element is an optional task type
-     * @param integer $type Type of job to run task as
+     * @param array  $args First key should be args to send
      *
-     * @return mixed  For background tasks, the task object is returned.
-     *                For foreground tasks, the result is returned.
-     *
-     * @see Net_Gearman_Task
+     * @return void
+     * @see Net_Gearman_Task, Net_Gearman_Set
      */
-    public function __call($func, array $args)
+    public function __call($func, array $args = array())
     {
-
-        if(!isset($args[0])){
-            throw new Net_Gearman_Exception('Invalid job arguments');
+        $send = "";
+        if (isset($args[0]) && !empty($args[0])) {
+            $send = $args[0];
         }
 
-        $job_args = $args[0];
-
-        if(isset($args[1])){
-            $type = $args[1];
-        } else {
-            $type = Net_Gearman_Task::JOB_BACKGROUND;
-        }
-
-        $task = new Net_Gearman_Task($func, $job_args, null, $type);
+        $task       = new Net_Gearman_Task($func, $send);
+        $task->type = Net_Gearman_Task::JOB_BACKGROUND;
 
         $set = new Net_Gearman_Set();
         $set->addTask($task);
-
         $this->runSet($set);
-
-        if($type == Net_Gearman_Task::JOB_BACKGROUND ||
-           $type == Net_Gearman_Task::JOB_HIGH_BACKGROUND ||
-           $type == Net_Gearman_Task::JOB_LOW_BACKGROUND){
-
-            $return = $task;
-
-        } else {
-
-            $return = $task->result;
-        }
-
-        return $return;
+        return $task->handle;
     }
 
     /**
@@ -281,13 +249,13 @@ class Net_Gearman_Client
         $s = $this->getConnection($task->uniq);
         Net_Gearman_Connection::send($s, $type, $params);
 
-        if (!is_array(Net_Gearman_Connection::$waiting[(int)$s])) {
-            Net_Gearman_Connection::$waiting[(int)$s] = array();
+        $s_key = (int)$s;
+
+        if (!is_array(Net_Gearman_Connection::$waiting[$s_key])) {
+            Net_Gearman_Connection::$waiting[$s_key] = array();
         }
 
-        array_push(Net_Gearman_Connection::$waiting[(int)$s], $task);
-
-        $task->server = $this->serverConnections[(int)$s];
+        array_push(Net_Gearman_Connection::$waiting[$s_key], $task);
     }
 
     /**
@@ -431,6 +399,7 @@ class Net_Gearman_Client
     {
         $this->disconnect();
     }
+
 }
 
 ?>
