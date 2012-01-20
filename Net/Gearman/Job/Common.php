@@ -109,22 +109,17 @@ abstract class Net_Gearman_Job_Common
      * different languages. You should always pass an array as the result to
      * this function.
      *
-     * @param mixed $result Result of your job
+     * @param array $result Result of your job
      *
      * @return void
      * @see Net_Gearman_Connection::send()
      */
-    public function complete($result)
+    public function complete(array $result)
     {
-        // if we don't have a scalar
-        // json encode the data
-        if(!is_scalar($result)){
-            $result = json_encode($result);
-        }
 
         Net_Gearman_Connection::send($this->conn, 'work_complete', array(
             'handle' => $this->handle,
-            'result' => $result
+            'result' => json_encode($result)
         ));
     }
 
