@@ -95,7 +95,13 @@ class Net_Gearman_Client
             if(empty($server)){
                 throw new Net_Gearman_Exception('Invalid servers specified');
             }
-            $conn = Net_Gearman_Connection::connect($server, $timeout);
+            $conn = null;
+            try {
+                $conn = Net_Gearman_Connection::connect($server, $timeout);
+            } catch (Net_Gearman_Exception $e) {
+                unset($this->servers[$key]);
+                continue;
+            }
             if (!Net_Gearman_Connection::isConnected($conn)) {
                 unset($this->servers[$key]);
                 continue;
@@ -104,7 +110,11 @@ class Net_Gearman_Client
             $this->conn[] = $conn;
             $this->serverConnections[(int)$conn] = $server;
         }
-
+        if (empty($this->conn)) {
+            throw new Net_Gearman_Exception(
+                "Couldn't connect to any available servers"
+            );
+        }
         $this->timeout = $timeout;
     }
 
