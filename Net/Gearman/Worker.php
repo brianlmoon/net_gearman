@@ -113,6 +113,12 @@ class Net_Gearman_Worker
      */
     protected $id = "";
 
+    /**
+     * Socket return timeout
+     *
+     * @var int $socket_timeout
+     */
+    protected $socket_timeout = 1;
 
     /**
      * Callback types
@@ -128,18 +134,17 @@ class Net_Gearman_Worker
     /**
      * Constructor
      *
-     * @param array $servers List of servers to connect to
-     * @param string $id     Optional unique id for this worker
+     * @param array $servers        List of servers to connect to
+     * @param string $id            Optional unique id for this worker
+     * @param int $socket_timeout   Timout for the socket select
      *
      * @return void
      * @throws Net_Gearman_Exception
      * @see Net_Gearman_Connection
      */
-    public function __construct($servers = null, $id = "")
+    public function __construct($servers, $id = "", $socket_timeout=null)
     {
-        if (is_null($servers)){
-            $servers = array("localhost");
-        } elseif (!is_array($servers) && strlen($servers)) {
+        if (!is_array($servers) && strlen($servers)) {
             $servers = array($servers);
         } elseif (is_array($servers) && !count($servers)) {
             throw new Net_Gearman_Exception('Invalid servers specified');
@@ -150,6 +155,14 @@ class Net_Gearman_Worker
         }
 
         $this->id = $id;
+
+        if(!is_null($socket_timeout)){
+            if(is_numeric($socket_timeout)){
+                $this->socket_timeout = (int)$socket_timeout;
+            } else {
+                throw Net_Gearman_Exception("Invalid valid for socket timeout");
+            }
+        }
 
         foreach ($servers as $s) {
             try {
@@ -252,7 +265,7 @@ class Net_Gearman_Worker
                 }
 
                 $read = $this->conn;
-                socket_select($read, $write, $except, 60);
+                @socket_select($read, $write, $except, $this->socket_timeout);
                 $idle = (count($read) == 0);
             }
 
@@ -340,6 +353,10 @@ class Net_Gearman_Worker
             $this->start($handle, $name, $arg);
             $res = $job->run($arg);
 
+            if (!is_array($res)) {
+                $res = array('result' => $res);
+            }
+
             $job->complete($res);
             $this->complete($handle, $name, $res);
         } catch (Net_Gearman_Job_Exception $e) {
@@ -399,11 +416,11 @@ class Net_Gearman_Worker
      *
      * @param string $handle The job's Gearman handle
      * @param string $job    The name of the job
-     * @param mixed  $result The job's returned result
+     * @param array  $result The job's returned result
      *
      * @return void
      */
-    protected function complete($handle, $job, $result)
+    protected function complete($handle, $job, array $result)
     {
         if (count($this->callback[self::JOB_COMPLETE]) == 0) {
             return; // No callbacks to run
