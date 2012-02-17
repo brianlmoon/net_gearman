@@ -49,9 +49,14 @@ class Net_Gearman_Client
     /**
      * A list of Gearman servers
      *
-     * @var array $servers A list of potential Gearman servers
+     * @var array $serverToSocket A list of Gearman servers and their corresponding Sockets
      */
-    protected $servers = array();
+    protected $serverToSocket = array();
+
+	/**
+	 * @var array $socketIdToServer A list of socket IDs and their corresponding server URLs
+	 */
+	protected $socketIdToServer = array();
 
     /**
      * The timeout for Gearman connections
@@ -78,8 +83,8 @@ class Net_Gearman_Client
             throw new Net_Gearman_Exception('Invalid servers specified');
         }
 
-        $this->servers = array_flip($servers);
-        foreach ($this->servers as $server => $dummy) {
+        $this->serverToSocket = array_flip($servers);
+        foreach ($this->serverToSocket as $server => $dummy) {
             $conn = null;
             try{
             $conn = Net_Gearman_Connection::connect($server, $timeout);
@@ -87,11 +92,12 @@ class Net_Gearman_Client
                 trigger_error($e->getMessage(). " server: $server", E_USER_WARNING);
             }
             if (!Net_Gearman_Connection::isConnected($conn)) {
-                unset($this->servers[$server]);
+                unset($this->serverToSocket[$server]);
                 continue;
             }
 
-	        $this->servers[$server] = $conn;
+	        $this->serverToSocket[$server] = $conn;
+	        $this->socketIdToServer[(int) $conn] = $server;
             $this->conn[] = $conn;
         }
 
@@ -142,13 +148,13 @@ class Net_Gearman_Client
         );
 
         if(!is_null($server)){
-            $server_list = array($this->servers[$server]);
+            $server_list = array($this->serverToSocket[$server]);
 
-	        if (!$this->servers[$server])
+	        if (!$this->serverToSocket[$server])
 		        throw new Net_Gearman_Exception('Invalid server specified');
 
         } else {
-            $server_list = $this->servers;
+            $server_list = $this->serverToSocket;
         }
 
         foreach($server_list as $s) {
@@ -365,6 +371,7 @@ class Net_Gearman_Client
         case 'job_created':
             $task         = array_shift(Net_Gearman_Connection::$waiting[(int)$s]);
             $task->handle = $resp['data']['handle'];
+            $task->server = $this->socketIdToServer[(int) $s];
             if ($task->type == Net_Gearman_Task::JOB_BACKGROUND) {
                 $task->finished = true;
             }
