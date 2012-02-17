@@ -131,6 +131,30 @@ class Net_Gearman_Client
         return $conn;
     }
 
+	/**
+	 * Gets the current status of a Task
+	 *
+	 * @param string $handle The handle returned when the task was created
+	 * @return mixed An associative array containing information about
+	 *               the provided task handle. Returns false if the request failed.
+	 */
+	public function getTaskStatusByHandle($handle, $server = null)
+	{
+		return $this->getStatus($handle, $server);
+	}
+
+	/**
+	 * Gets the current status of a Task
+	 *
+	 * @param Net_Gearman_Task $task
+	 * @return mixed An associative array containing information about
+	 *               the provided task handle. Returns false if the request failed.
+	 */
+	public function getTaskStatus(Net_Gearman_Task $task)
+	{
+		return $this->getStatus($task->handle, $task->server);
+	}
+
     /**
      * Private function to handle the status communication
      *
