@@ -78,8 +78,8 @@ class Net_Gearman_Client
             throw new Net_Gearman_Exception('Invalid servers specified');
         }
 
-        $this->servers = $servers;
-        foreach ($this->servers as $key => $server) {
+        $this->servers = array_flip($servers);
+        foreach ($this->servers as $server => $dummy) {
             $conn = null;
             try{
             $conn = Net_Gearman_Connection::connect($server, $timeout);
@@ -87,10 +87,11 @@ class Net_Gearman_Client
                 trigger_error($e->getMessage(). " server: $server", E_USER_WARNING);
             }
             if (!Net_Gearman_Connection::isConnected($conn)) {
-                unset($this->servers[$key]);
+                unset($this->servers[$server]);
                 continue;
             }
 
+	        $this->servers[$server] = $conn;
             $this->conn[] = $conn;
         }
 
@@ -141,7 +142,11 @@ class Net_Gearman_Client
         );
 
         if(!is_null($server)){
-            $server_list = array($server);
+            $server_list = array($this->servers[$server]);
+
+	        if (!$this->servers[$server])
+		        throw new Net_Gearman_Exception('Invalid server specified');
+
         } else {
             $server_list = $this->servers;
         }
