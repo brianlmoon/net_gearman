@@ -318,16 +318,16 @@ class Net_Gearman_Connection
      * @throws Net_Gearman_Exception on timeouts
      * @return array
      */
-    static public function blockingRead($socket, $timeout = 500)
+    static public function blockingRead($socket, $timeout = .5)
     {
         static $cmds = array();
 
         $tv_sec  = floor(($timeout % 1000));
-        $tv_usec = ($timeout * 1000);
+        $tv_usec = (($timeout - $tv_sec) * 1000);
 
         $start = microtime(true);
         while (count($cmds) == 0) {
-            if (((microtime(true) - $start) * 1000) > $timeout) {
+            if (((microtime(true) - $start)) > $timeout) {
                 throw new Net_Gearman_Exception('Blocking read timed out');
             }
 
