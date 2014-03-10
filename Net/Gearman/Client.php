@@ -120,14 +120,6 @@ class Net_Gearman_Client
                     $conn = Net_Gearman_Connection::connect($server, $this->timeout);
                 } catch(Net_Gearman_Exception $e) {
                     $conn = null;
-                    Logger::log("gearman_worker_error_log", array(
-                        "server" => $server,
-                        "timeout" => $this->timeout,
-                        "elapsed" => microtime(true) - $start,
-                        "error_message" => $e->getMessage(),
-                        "error_file" => $e->getFile(),
-                        "error_line" => $e->getLine()
-                    ), true);
                 }
 
                 if (!Net_Gearman_Connection::isConnected($conn)) {

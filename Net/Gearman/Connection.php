@@ -183,10 +183,7 @@ class Net_Gearman_Connection
             socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array("sec"=>$tv_sec, "usec" => $tv_usec));
             socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array("sec"=>$tv_sec, "usec" => $tv_usec));
             // socket_set_option($socket, SOL_TCP, SO_DEBUG, 1); // Debug
-            StatsD::timing("application.gearman.connect_time_per_server.".get_cfg_var("dealnews.location")."_to_".str_replace(".", "_", $host), $elapsed);
         } else {
-            StatsD::timing("application.gearman.connect_time_per_server_failure.".get_cfg_var("dealnews.location")."_to_".str_replace(".", "_", $host), $elapsed);
-            StatsD::increment("application.gearman.connect_failed.".get_cfg_var("dealnews.location")."_to_".str_replace(".", "_", $host), 1);
             $errno = socket_last_error($socket);
             $errstr = socket_strerror($errno);
             throw new Net_Gearman_Exception(
@@ -365,7 +362,6 @@ class Net_Gearman_Connection
 
             if(rand(1,1000) == 1){
                 socket_getpeername($socket, $addr);
-                StatsD::timing("application.gearman.select_time_per_server.".get_cfg_var("dealnews.location")."_to_".str_replace(".", "_", $addr), $elapsed);
             }
 
             foreach ($read as $s) {
