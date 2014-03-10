@@ -1,14 +1,12 @@
-
 Net_Gearman
 About
 
 Net_Gearman is a PEAR package for interfacing with Danga's Gearman. Gearman is a system to farm out work to other machines, dispatching function calls to machines that are better suited to do work, to do work in parallel, to load balance lots of function calls, or to call functions between languages.
 
-Net_Gearman is currently in production at Yahoo! and Digg doing all sorts of offloaded near time processing.
 Installation
 
    1. Install PEAR if it is not already installed on your system.
-   2. Run pear install http://netgearman.googlecode.com/files/Net_Gearman-x.y.z.tgz (Replace x.y.z with the latest version from the featured download to the right). 
+   2. Use git to pull this repo to your servers. Be sure where you install it is in the autoload or include path before the rest of PEAR.
 
 Examples
 Client
@@ -39,7 +37,7 @@ class Net_Gearman_Job_someBackgroundJob extends Net_Gearman_Job_Common
 
         // Insert a record or something based on the $args
 
-        return array(); // Results are returned to Gearman, except for 
+        return array(); // Results are returned to Gearman, except for
                         // background jobs like this one.
     }
 }
@@ -47,6 +45,8 @@ class Net_Gearman_Job_someBackgroundJob extends Net_Gearman_Job_Common
 ?>
 
 Worker
+
+For easiest use, use GearmanManager for running workers. See: https://github.com/brianlmoon/GearmanManager
 
 <?php
 
