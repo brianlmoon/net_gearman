@@ -128,6 +128,7 @@ class Net_Gearman_Connection
      *
      * @param string $host    e.g. 127.0.0.1 or 127.0.0.1:7003
      * @param int    $timeout Timeout in milliseconds
+     * @param int    $retries Number of retries during timeout period
      *
      * @return resource A connection to a Gearman server
      * @throws Net_Gearman_Exception when it can't connect to server
@@ -135,7 +136,7 @@ class Net_Gearman_Connection
      * @see Net_Gearman_Connection::$magic
      * @see Net_Gearman_Connection::$commands
      */
-    static public function connect($host, $timeout = 2000)
+    static public function connect($host, $timeout = 2000, $retries = 20)
     {
         if (!count(self::$magic)) {
             foreach (self::$commands as $cmd => $i) {
@@ -159,6 +160,8 @@ class Net_Gearman_Connection
             if ($socket_connected) {
                 socket_set_nonblock($socket);
                 socket_set_option($socket, SOL_TCP, 1, 1);
+            } else {
+                usleep(($timeout/$retries)*1000);
             }
         } while (!$socket_connected && $elapsed < $timeout);
 
