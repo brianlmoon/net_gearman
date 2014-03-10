@@ -18,8 +18,6 @@
  * @copyright 2007-2008 Digg.com, Inc.
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
  * @version   CVS: $Id$
- * @link      http://pear.php.net/package/Net_Gearman
- * @link      http://www.danga.com/gearman/
  * @link      https://github.com/brianlmoon/net_gearman
  */
 
@@ -31,9 +29,8 @@ require_once 'Net/Gearman/Exception.php';
  * @category  Net
  * @package   Net_Gearman
  * @author    Joe Stump <joe@joestump.net>
+ * @author    Brian Moon <brianm@dealnews.com>
  * @copyright 2007-2008 Digg.com, Inc.
- * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @link      http://www.danga.com/gearman/
  * @link      https://github.com/brianlmoon/net_gearman
  */
 class Net_Gearman_Connection
@@ -135,7 +132,7 @@ class Net_Gearman_Connection
      * @see Net_Gearman_Connection::$magic
      * @see Net_Gearman_Connection::$commands
      */
-    static public function connect($host, $timeout = 2000)
+    static public function connect($host, $timeout = 250)
     {
         if (!count(self::$magic)) {
             foreach (self::$commands as $cmd => $i) {
@@ -143,28 +140,55 @@ class Net_Gearman_Connection
             }
         }
 
-        $err   = '';
-        $errno = 0;
-        $port  = 4730;
-
         if (strpos($host, ':')) {
             list($host, $port) = explode(':', $host);
+        } else {
+            $port  = 4730;
         }
 
-        $start = microtime(true);
-        do {
-            $socket           = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-            $socket_connected = @socket_connect($socket, $host, $port);
-            $elapsed = ((microtime(true) - $start) * 1000);
-            if ($socket_connected) {
-                socket_set_nonblock($socket);
-                socket_set_option($socket, SOL_TCP, 1, 1);
-            }
-        } while (!$socket_connected && $elapsed < $timeout);
+        /**
+         * Translate $timeout in milliseconds to seconds and µ seconds
+         */
+        if($timeout > 1000){
+            $ts_seconds = $timeout / 1000;
+            $tv_sec = floor($ts_seconds);
+            $tv_usec = ($ts_seconds - $tv_sec) * 1000000;
+        } else {
+            $tv_sec = 0;
+            $tv_usec = $timeout * 1000;
+        }
 
-        if (!$socket_connected) {
-            $errno  = socket_last_error($socket);
-            $errstr	= socket_strerror($errno);
+
+        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+
+        /**
+         * The SO_SNDTIMEO timeout acts as the connect timeout.
+         */
+        socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array("sec"=>$tv_sec, "usec" => $tv_usec));
+
+        /**
+         * Explicitly set this to blocking which should be the default
+         */
+        socket_set_block($socket);
+
+        $now = microtime(true);
+
+        $socket_connected = @socket_connect($socket, $host, $port);
+
+        $elapsed = microtime(true) - $now;
+
+        if($socket_connected){
+            socket_set_nonblock($socket);
+            socket_set_option($socket, SOL_SOCKET, SO_KEEPALIVE, 1);
+            socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array("sec"=>$tv_sec, "usec" => $tv_usec));
+            socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array("sec"=>$tv_sec, "usec" => $tv_usec));
+            // socket_set_option($socket, SOL_TCP, SO_DEBUG, 1); // Debug
+            StatsD::timing("application.gearman.connect_time_per_server.".get_cfg_var("dealnews.location")."_to_".str_replace(".", "_", $host), $elapsed);
+        } else {
+            StatsD::timing("application.gearman.connect_time_per_server_failure.".get_cfg_var("dealnews.location")."_to_".str_replace(".", "_", $host), $elapsed);
+            StatsD::increment("application.gearman.connect_failed.".get_cfg_var("dealnews.location")."_to_".str_replace(".", "_", $host), 1);
+            $errno = socket_last_error($socket);
+            $errstr = socket_strerror($errno);
             throw new Net_Gearman_Exception(
                 "Can't connect to server ($errno: $errstr)"
             );
@@ -222,7 +246,7 @@ class Net_Gearman_Connection
                     socket_last_error($socket) == SOCKET_EWOULDBLOCK or
                     socket_last_error($socket) == SOCKET_EINPROGRESS)
                 {
-                    // skip this is okay
+                  // skip this is okay
                 }
                 else
                 {
@@ -235,8 +259,8 @@ class Net_Gearman_Connection
         } while ($written < $cmdLength);
 
         if ($error === true) {
-            $errno  = socket_last_error($socket);
-            $errstr	= socket_strerror($errno);
+            $errno = socket_last_error($socket);
+            $errstr = socket_strerror($errno);
             throw new Net_Gearman_Exception(
                 "Could not write command to socket ($errno: $errstr)"
             );
@@ -318,12 +342,12 @@ class Net_Gearman_Connection
      * @throws Net_Gearman_Exception on timeouts
      * @return array
      */
-    static public function blockingRead($socket, $timeout = .5)
+    static public function blockingRead($socket, $timeout = 3)
     {
         static $cmds = array();
 
         $tv_sec  = floor(($timeout % 1000));
-        $tv_usec = (($timeout - $tv_sec) * 1000);
+        $tv_usec = ($timeout * 1000);
 
         $start = microtime(true);
         while (count($cmds) == 0) {
@@ -335,7 +359,15 @@ class Net_Gearman_Connection
             $except = null;
             $read   = array($socket);
 
+            $ts_start = microtime(true);
             @socket_select($read, $write, $except, $tv_sec, $tv_usec);
+            $elapsed = (microtime(true) - $ts_start) * 1000;
+
+            if(rand(1,1000) == 1){
+                socket_getpeername($socket, $addr);
+                StatsD::timing("application.gearman.select_time_per_server.".get_cfg_var("dealnews.location")."_to_".str_replace(".", "_", $addr), $elapsed);
+            }
+
             foreach ($read as $s) {
                 $cmds[] = Net_Gearman_Connection::read($s);
             }
@@ -354,6 +386,16 @@ class Net_Gearman_Connection
     static public function close($socket)
     {
         if (is_resource($socket)) {
+            socket_set_block($socket);
+            socket_set_option(
+                $socket,
+                SOL_SOCKET,
+                SO_LINGER,
+                array(
+                    'l_onoff' => 1,
+                    'l_linger' => 1
+                )
+            );
             socket_close($socket);
         }
     }
@@ -389,8 +431,8 @@ class Net_Gearman_Connection
         if (self::$multiByteSupport & 2) {
             return mb_strlen($value, '8bit');
         } else {
-        return strlen($value);
-    }
+            return strlen($value);
+        }
     }
 
     /**
