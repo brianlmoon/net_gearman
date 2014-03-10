@@ -326,7 +326,11 @@ class Net_Gearman_Worker
             $resp = Net_Gearman_Connection::blockingRead($socket);
         }
 
-        if (in_array($resp['function'], array('noop', 'no_job'))) {
+        /**
+         * The response can be empty during shut down. We don't need to proceed
+         * in those cases.
+         */
+        if (!is_array($resp) || empty($resp) || in_array($resp['function'], array('noop', 'no_job'))) {
             return false;
         }
 
