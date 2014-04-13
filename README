@@ -32,6 +32,7 @@ class Net_Gearman_Job_someBackgroundJob extends Net_Gearman_Job_Common
     public function run($args)
     {
         if (!isset($args['userid']) || !isset($args['action'])) {
+            // Throw a Net_Gearman_Job_Exception to report back to the server that the job failed.
             throw new Net_Gearman_Job_Exception('Invalid/Missing arguments');
         }
 
