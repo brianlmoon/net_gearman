@@ -64,7 +64,7 @@ class Net_Gearman_Client
      * Constructor
      *
      * @param array   $servers An array of servers or a single server
-     * @param integer $timeout Timeout in microseconds
+     * @param integer $timeout Timeout in seconds or miliseconds
      *
      * @return void
      * @throws Net_Gearman_Exception
