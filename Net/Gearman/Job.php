@@ -74,7 +74,7 @@ abstract class Net_Gearman_Job
         }
 
         if ( ! file_exists($file) ) {
-            throw new Net_Gearman_Job_Exception('Invalid Job class file: ' . empty($file) ? '<empty>' : $file);
+            throw new Net_Gearman_Job_Exception('Invalid Job class file: ' . (empty($file) ? '<empty>' : $file));
         }
 
         include_once $file;
