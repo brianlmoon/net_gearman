@@ -21,8 +21,8 @@
  * @link      https://github.com/brianlmoon/net_gearman
  */
 
-require_once 'Net/Gearman/Connection.php';
-require_once 'Net/Gearman/Set.php';
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Connection.php';
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Set.php';
 
 /**
  * A client for submitting jobs to Gearman

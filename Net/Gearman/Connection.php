@@ -21,7 +21,7 @@
  * @link      https://github.com/brianlmoon/net_gearman
  */
 
-require_once 'Net/Gearman/Exception.php';
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Exception.php';
 
 /**
  * The base connection class

@@ -21,8 +21,6 @@
  * @link      https://github.com/brianlmoon/net_gearman
  */
 
-require_once 'PEAR/Exception.php';
-
 /**
  * Exception class for Net_Gearman
  *
@@ -32,9 +30,8 @@ require_once 'PEAR/Exception.php';
  * @author    Brian Moon <brianm@dealnews.com>
  * @copyright 2007-2008 Digg.com, Inc.
  * @link      https://github.com/brianlmoon/net_gearman
- * @see       PEAR_Exception
  */
-class Net_Gearman_Exception extends PEAR_Exception
+class Net_Gearman_Exception extends Exception
 {
 
 }
