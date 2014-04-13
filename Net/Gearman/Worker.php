@@ -350,10 +350,11 @@ class Net_Gearman_Worker
             }
         }
 
-        $job = Net_Gearman_Job::factory(
-            $name, $socket, $handle, $this->initParams[$name]
-        );
         try {
+            $job = Net_Gearman_Job::factory(
+                $name, $socket, $handle, $this->initParams[$name]
+            );
+
             $this->start($handle, $name, $arg);
             $res = $job->run($arg);
 
@@ -364,7 +365,11 @@ class Net_Gearman_Worker
             $job->complete($res);
             $this->complete($handle, $name, $res);
         } catch (Net_Gearman_Job_Exception $e) {
-            $job->fail();
+            // If the factory method call fails, we won't have a job.
+            if (isset($job) && $job instanceof Net_Gearman_Job) {
+                $job->fail();
+            }
+
             $this->fail($handle, $name, $e);
         }
 
