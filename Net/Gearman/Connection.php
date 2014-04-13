@@ -456,5 +456,3 @@ class Net_Gearman_Connection
         }
     }
 }
-
-?>

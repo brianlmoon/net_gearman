@@ -316,5 +316,3 @@ class Net_Gearman_Manager
         $this->disconnect();
     }
 }
-
-?>
