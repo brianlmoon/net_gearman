@@ -70,12 +70,12 @@ abstract class Net_Gearman_Job
         include_once $file;
         $class = NET_GEARMAN_JOB_CLASS_PREFIX . $job;
         if (!class_exists($class)) {
-            throw new Net_Gearman_Job_Exception('Invalid Job class');
+            throw new Net_Gearman_Job_Exception('Invalid Job class: ' . empty($class) ? '<empty>' : $file);
         }
 
         $instance = new $class($conn, $handle, $initParams);
         if (!$instance instanceof Net_Gearman_Job_Common) {
-            throw new Net_Gearman_Job_Exception('Job is of invalid type');
+            throw new Net_Gearman_Job_Exception('Job is of invalid type: ' . get_class($instance));
         }
 
         return $instance;
