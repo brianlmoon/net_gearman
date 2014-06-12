@@ -66,9 +66,26 @@ abstract class Net_Gearman_Job
      */
     static public function factory($job, $conn, $handle, $initParams=array())
     {
-        $file = NET_GEARMAN_JOB_PATH . '/' . $job . '.php';
+        if (empty($initParams['path'])) {
+            $file = NET_GEARMAN_JOB_PATH . '/' . $job . '.php';
+        }
+        else {
+            $file = $initParams['path'];
+        }
+
+        if ( ! file_exists($file) ) {
+            throw new Net_Gearman_Job_Exception('Invalid Job class file: ' . (empty($file) ? '<empty>' : $file));
+        }
+
         include_once $file;
-        $class = NET_GEARMAN_JOB_CLASS_PREFIX . $job;
+
+        if (empty($initParams['class_name'])) {
+            $class = NET_GEARMAN_JOB_CLASS_PREFIX . $job;
+        }
+        else {
+            $class = $initParams['class_name'];
+        }
+
         if (!class_exists($class)) {
             throw new Net_Gearman_Job_Exception('Invalid Job class: ' . (empty($class) ? '<empty>' : $class) . ' in ' . (empty($file) ? '<empty>' : $file) );
         }
