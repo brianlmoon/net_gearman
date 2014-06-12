@@ -102,12 +102,14 @@ abstract class Net_Gearman_Job_Common
     }
 
     /**
-     * Mark your job as complete with its status
+     * Mark your job as complete with its status.
      *
      * Net_Gearman communicates between the client and jobs in JSON. The main
      * benefit of this is that we can send fairly complex data types between
      * different languages. You should always pass an array as the result to
      * this function.
+     *
+     * NOTE: Your actual worker code should not call this if you are using the GearmanManager
      *
      * @param array $result Result of your job
      *
@@ -129,6 +131,9 @@ abstract class Net_Gearman_Job_Common
      * If your job fails for some reason (e.g. a query fails) you need to run
      * this function and exit from your run() method. This will tell Gearman
      * (and the client by proxy) that the job has failed.
+     *
+     * NOTE: Your actual worker code should not call this if you are using the GearmanManager, you should
+     * throw a Net_Gearman_Job_Exception instead.
      *
      * @return void
      * @see Net_Gearman_Connection::send()
