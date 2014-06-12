@@ -289,7 +289,7 @@ class Net_Gearman_Manager
         $data = trim($data);
         if (preg_match('/^ERR/', $data)) {
             list(, $code, $msg) = explode(' ', $data);
-            throw new Net_Gearman_Exception($msg, urldecode($code));
+            throw new Net_Gearman_Exception($msg . ' [error code: ' . urldecode($code) . ']');
         }
     }
 

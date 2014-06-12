@@ -320,9 +320,7 @@ class Net_Gearman_Connection
                 $return['err_text'] = 'Unknown error; see error code.';
             }
 
-            throw new Net_Gearman_Exception(
-                $return['err_text'], $return['err_code']
-            );
+            throw new Net_Gearman_Exception("({$return['err_code']}): {$return['err_text']}");
         }
 
         return array('function' => self::$magic[$resp['type']][0],
