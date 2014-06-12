@@ -403,5 +403,3 @@ class Net_Gearman_Client
         return $instances[$key];
     }
 }
-
-?>

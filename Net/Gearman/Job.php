@@ -98,5 +98,3 @@ abstract class Net_Gearman_Job
         return $instance;
     }
 }
-
-?>

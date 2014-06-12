@@ -38,5 +38,3 @@ class Net_Gearman_Exception extends PEAR_Exception
 {
 
 }
-
-?>
