@@ -149,7 +149,7 @@ class Net_Gearman_Connection
         /**
          * Translate $timeout in milliseconds to seconds and µ seconds
          */
-        if($timeout > 1000){
+        if($timeout >= 1000){
             $ts_seconds = $timeout / 1000;
             $tv_sec = floor($ts_seconds);
             $tv_usec = ($ts_seconds - $tv_sec) * 1000000;
