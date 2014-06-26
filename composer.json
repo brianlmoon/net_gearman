@@ -19,5 +19,8 @@
     },
     "autoload": {
         "classmap": [ "Net/Gearman" ]
-    }
+    },
+    "include-path": [
+        "."
+    ]
 }
