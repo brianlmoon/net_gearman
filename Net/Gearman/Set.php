@@ -21,7 +21,7 @@
  * @link      https://github.com/brianlmoon/net_gearman
  */
 
-require_once 'Net/Gearman/Task.php';
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Task.php';
 
 /**
  * A class for creating sets of tasks

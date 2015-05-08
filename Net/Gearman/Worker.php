@@ -20,8 +20,8 @@
  * @link      http://www.danga.com/gearman/
  */
 
-require_once 'Net/Gearman/Connection.php';
-require_once 'Net/Gearman/Job.php';
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Connection.php';
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Job.php';
 
 /**
  * Gearman worker class
