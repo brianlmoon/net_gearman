@@ -94,7 +94,7 @@
                       role="test" />
                 <file name="012-client-runSet.phpt"
                       role="test" />
-                <file name="tests-config.php"
+                <file name="tests-config.php-dist"
                       role="test" />
             </dir>
         </dir>
