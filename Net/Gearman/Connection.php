@@ -390,6 +390,7 @@ class Net_Gearman_Connection
                     'l_linger' => 1
                 )
             );
+            socket_shutdown($socket);
             socket_close($socket);
         }
     }
