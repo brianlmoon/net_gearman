@@ -404,9 +404,25 @@ class Net_Gearman_Connection
      */
     static public function isConnected($conn)
     {
-        return (is_null($conn) !== true &&
-                is_resource($conn) === true &&
-                strtolower(get_resource_type($conn)) == 'socket');
+        if (is_null($conn) || !is_resource($conn)) {
+            return false;
+        }
+
+        $resourceType = strtolower(get_resource_type($conn));
+
+        if (defined('HHVM_VERSION')) {
+            // Now in hhvm resource type is 'stream', but there is pull request on github and can be changed.
+            // So, we must support both resource types.
+            if ($resourceType != 'stream' && $resourceType != 'socket') {
+                return false;
+            }
+        } else {
+            if ($resourceType != 'socket') {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
