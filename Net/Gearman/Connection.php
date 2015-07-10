@@ -408,7 +408,7 @@ class Net_Gearman_Connection
             return false;
         }
 
-        $resourceType = strtolower(get_resource_type($conn);
+        $resourceType = strtolower(get_resource_type($conn));
 
         if (defined('HHVM_VERSION')) {
             // Now in hhvm resource type is 'stream', but there is pull request on github and can be changed.
