@@ -143,10 +143,18 @@ class Net_Gearman_Manager
                 continue;
             }
 
-            list($info, $abilities) = explode(':', $t);
-            list($fd, $ip, $id)     = explode(' ', trim($info));
-
-            $abilities = trim($abilities);
+            // fix for such data got from fgets
+            // $t = '34 ::3530:3539:3500:0%2134665296 - :';
+            $parts = explode(":", $t);
+            $count = count($parts);
+            if ($count > 2) {
+                $temporary[0] = implode(":", array_slice($parts, 0, -1));
+                $temporary[1] = $parts[$count - 1];
+                $parts = $temporary;
+            }
+            $info = isset($parts[0]) ? trim($parts[0]) : "";
+            $abilities = isset($parts[1]) ? trim($parts[1]) : "";
+            list($fd, $ip, $id) = explode(' ', $info);
 
             $workers[] = array(
                 'fd' => $fd,
