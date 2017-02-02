@@ -150,14 +150,14 @@ class Net_Gearman_Worker
             throw new Net_Gearman_Exception('Invalid servers specified');
         }
 
-        if(empty($id)){
+        if (empty($id)) {
             $id = "pid_".getmypid()."_".uniqid();
         }
 
         $this->id = $id;
 
-        if(!is_null($socket_timeout)){
-            if(is_numeric($socket_timeout)){
+        if (!is_null($socket_timeout)) {
+            if (is_numeric($socket_timeout)) {
                 $this->socket_timeout = (int)$socket_timeout;
             } else {
                 throw Net_Gearman_Exception("Invalid valid for socket timeout");
@@ -300,6 +300,7 @@ class Net_Gearman_Worker
 
             if (call_user_func($monitor, $idle, $lastJob) == true) {
                 $working = false;
+                $this->endWork();
             }
         }
     }
@@ -345,7 +346,7 @@ class Net_Gearman_Worker
         if (isset($resp['data']['arg']) &&
             Net_Gearman_Connection::stringLength($resp['data']['arg'])) {
             $arg = json_decode($resp['data']['arg'], true);
-            if($arg === null){
+            if ($arg === null) {
                 $arg = $resp['data']['arg'];
             }
         }
