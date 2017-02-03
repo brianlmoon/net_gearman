@@ -108,7 +108,7 @@ class Net_Gearman_Connection
     public $socket;
 
     public function __construct($host=null, $timeout=250) {
-        if ($host){
+        if ($host) {
             $this->connect($host, $timeout);
         }
     }
@@ -175,7 +175,7 @@ class Net_Gearman_Connection
          * trying.
          */
         $socket_connected = false;
-        do{
+        do {
             socket_clear_error($this->socket);
             $socket_connected = @socket_connect($this->socket, $host, $port);
             $err = @socket_last_error($this->socket);
@@ -191,8 +191,7 @@ class Net_Gearman_Connection
         $socket_connected = $socket_connected && $err === 0;
 
 
-        if ($socket_connected){
-
+        if ($socket_connected) {
             socket_set_nonblock($this->socket);
 
             socket_set_option($this->socket, SOL_SOCKET, SO_KEEPALIVE, 1);
@@ -200,7 +199,7 @@ class Net_Gearman_Connection
             /**
              * set the real send/receive timeouts here now that we are connected
              */
-            if ($timeout >= 1000){
+            if ($timeout >= 1000) {
                 $ts_seconds = $timeout / 1000;
                 $tv_sec = floor($ts_seconds);
                 $tv_usec = ($ts_seconds - $tv_sec) * 1000000;
@@ -213,12 +212,7 @@ class Net_Gearman_Connection
 
             // socket_set_option($this->socket, SOL_TCP, SO_DEBUG, 1); // Debug
 
-            StatsD::timing("application.gearman.connect_time_per_server.".GetConfig::get("dealnews.location")."_to_".str_replace(".", "_", $host), $elapsed);
-
          } else {
-
-            StatsD::timing("application.gearman.connect_time_per_server_failure.".GetConfig::get("dealnews.location")."_to_".str_replace(".", "_", $host), $elapsed);
-            StatsD::increment("application.gearman.connect_failed.".GetConfig::get("dealnews.location")."_to_".str_replace(".", "_", $host), 1);
 
             $errno = @socket_last_error($this->socket);
             $errstr = @socket_strerror($errno);
@@ -238,11 +232,11 @@ class Net_Gearman_Connection
 
     }
 
-    public function addWaitingTask($task){
+    public function addWaitingTask($task) {
         $this->waiting[] = $task;
     }
 
-    public function getWaitingTask(){
+    public function getWaitingTask() {
         return array_shift($this->waiting);
     }
 
@@ -275,8 +269,6 @@ class Net_Gearman_Connection
         }
 
         $d = implode("\x00", $data);
-
-        // use for debug: Logger::log("gearman_worker_error_log", getmypid().":send:$command");
 
         $cmd = "\0REQ" . pack("NN",
                               $this->commands[$command][0],
@@ -373,8 +365,6 @@ class Net_Gearman_Connection
             throw new Net_Gearman_Exception("({$return['err_code']}): {$return['err_text']}");
         }
 
-        // use for debug: Logger::log("gearman_worker_error_log", getmypid().":read:".$this->magic[$resp['type']][0]);
-
         return array('function' => $this->magic[$resp['type']][0],
                      'type' => $resp['type'],
                      'data' => $return);
@@ -392,7 +382,7 @@ class Net_Gearman_Connection
     {
         $cmds = array();
 
-        if ($timeout >= 1000){
+        if ($timeout >= 1000) {
             $ts_seconds = $timeout / 1000;
             $tv_sec = floor($ts_seconds);
             $tv_usec = ($ts_seconds - $tv_sec) * 1000000;
@@ -408,19 +398,19 @@ class Net_Gearman_Connection
         $start = microtime(true);
         $success = @socket_select($read, $write, $except, $tv_sec, $tv_usec);
         $et = (microtime(true) - $start) * 1000;
-        if ($success === false){
+        if ($success === false) {
             $errno = @socket_last_error($this->socket);
-            if ($errno != 0){
+            if ($errno != 0) {
                 throw new Net_Gearman_Exception("Socket error: ($errno) ".socket_strerror($errno));
             }
         }
 
-        if ($success === 0){
+        if ($success === 0) {
             $errno = @socket_last_error($this->socket);
             throw new Net_Gearman_Exception("Socket timeout ($et): ($errno) ".socket_strerror($errno));
         }
 
-        if (count($read)){
+        if (count($read)) {
             foreach ($read as $s) {
                 $cmds[] = $this->read();
             }
