@@ -61,7 +61,9 @@ class Net_Gearman_Client
      * Constructor
      *
      * @param array   $servers An array of servers or a single server
-     * @param integer $timeout Timeout in seconds or miliseconds
+     * @param integer $timeout Timeout in miliseconds for the server connect time
+     *                         If multiple servers have to be tried, the total
+     *                         timeout for getConnection will be $timeout * {servers tried}
      *
      * @return void
      * @throws Net_Gearman_Exception
@@ -83,23 +85,34 @@ class Net_Gearman_Client
     /**
      * Get a connection to a Gearman server
      *
-     * @param string  $uniq The unique id of the job
+     * @param string  $uniq    The unique id of the job
+     * @param array   $servers Optional list of servers to limit use
      *
      * @return resource A connection to a Gearman server
      */
-    protected function getConnection($uniq=null)
+    protected function getConnection($uniq=null, $servers=null)
     {
         $conn = null;
 
         $start = microtime(true);
         $elapsed = 0;
 
-        $servers = $this->servers;
+        if (is_null($servers)){
+            $servers = $this->servers;
+        }
 
-        while ($conn === null && $elapsed < $this->timeout && count($servers)) {
-            if (count($servers) === 1) {
+        $try_servers = $servers;
+
+        /**
+         * Keep a list of the servers actually tried for the error message
+         */
+        $tried_servers = array();
+
+        while ($conn === null && count($servers)){
+
+            if (count($servers) === 1){
                 $key = key($servers);
-            } elseif ($uniq === null) {
+            } elseif ($uniq === null){
                 $key = array_rand($servers);
             } else {
                 $key = ord(substr(md5($uniq), -1)) % count($servers);
@@ -107,17 +120,30 @@ class Net_Gearman_Client
 
             $server = $servers[$key];
 
-            if (empty($this->conn[$server])) {
+            $tried_servers[] = $server;
+
+            if (empty($this->conn[$server])){
+
                 $conn = null;
 
                 $start = microtime(true);
-                try {
-                    $conn = Net_Gearman_Connection::connect($server, $this->timeout);
-                } catch (Net_Gearman_Exception $e) {
+                try{
+                    $conn = new Net_Gearman_Connection($server, $this->timeout);
+                } catch(Net_Gearman_Exception $e) {
                     $conn = null;
+                    Logger::log("gearman_worker_error_log", array(
+                        "level" => "warning",
+                        "event" => "client_connect",
+                        "server" => $server,
+                        "timeout" => $this->timeout,
+                        "elapsed" => microtime(true) - $start,
+                        "error_message" => $e->getMessage(),
+                        "error_file" => $e->getFile(),
+                        "error_line" => $e->getLine()
+                    ), true);
                 }
 
-                if (!Net_Gearman_Connection::isConnected($conn)) {
+                if (!$conn || !$conn->isConnected()) {
                     $conn = null;
                     unset($servers[$key]);
                     // we need to rekey the array
@@ -135,8 +161,12 @@ class Net_Gearman_Client
 
         }
 
-        if (empty($conn)) {
-            throw new Net_Gearman_Exception("Failed to connect to any Gearman servers. Attempted ".implode(",", $this->servers));
+        if (empty($conn)){
+            $message = "Failed to connect to a Gearman server. Attempted to connect to ".implode(",", $tried_servers).".";
+            if (count($tried_servers) != count($try_servers)){
+                $message.= " Not all servers were tried. Full server list is ".implode(",", $try_servers).".";
+            }
+            throw new Net_Gearman_Exception($message);
         }
 
         return $conn;
@@ -200,7 +230,7 @@ class Net_Gearman_Client
 
         // if we don't have a scalar
         // json encode the data
-        if (!is_scalar($task->arg)) {
+        if (!is_scalar($task->arg)){
             $arg = @json_encode($task->arg);
         } else {
             $arg = $task->arg;
@@ -212,16 +242,16 @@ class Net_Gearman_Client
             'arg'  => $arg
         );
 
-        $s = $this->getConnection($task->uniq);
-        Net_Gearman_Connection::send($s, $type, $params);
-
-        $s_key = (int)$s;
-
-        if (!is_array(Net_Gearman_Connection::$waiting[$s_key])) {
-            Net_Gearman_Connection::$waiting[$s_key] = array();
+        if (!empty($task->servers)){
+            $servers = $task->servers;
+        } else {
+            $servers = null;
         }
 
-        array_push(Net_Gearman_Connection::$waiting[$s_key], $task);
+        $conn = $this->getConnection($task->uniq, $servers);
+        $conn->send($type, $params);
+
+        $conn->addWaitingTask($task);
     }
 
     /**
@@ -239,7 +269,7 @@ class Net_Gearman_Client
         $taskKeys   = array_keys($set->tasks);
         $t          = 0;
 
-        if ($timeout !== null) {
+        if ($timeout !== null){
             $socket_timeout = min(10, (int)$timeout);
         } else {
             $socket_timeout = 10;
@@ -281,21 +311,24 @@ class Net_Gearman_Client
 
             $write  = null;
             $except = null;
-            $read   = $this->conn;
-            @socket_select($read, $write, $except, $socket_timeout);
-            foreach ($read as $socket) {
-                $err = socket_last_error($socket);
+            $read_cons = array();
+            foreach ($this->conn as $conn){
+                $read_conns[] = $conn->socket;
+            }
+            @socket_select($read_conns, $write, $except, $socket_timeout);
+            foreach ($this->conn as $conn) {
+                $err = socket_last_error($conn->socket);
                 // Error 11 is EAGAIN and is normal in non-blocking mode
-                if ($err && $err != 11) {
+                if ($err && $err != 11){
                     $msg = socket_strerror($err);
-                    socket_getpeername($socket, $remote_address, $remote_port);
-                    socket_getsockname($socket, $local_address, $local_port);
+                    socket_getpeername($conn->socket, $remote_address, $remote_port);
+                    socket_getsockname($conn->socket, $local_address, $local_port);
                     trigger_error("socket_select failed: ($err) $msg; server: $remote_address:$remote_port", E_USER_WARNING);
                 }
-                socket_clear_error($socket);
-                $resp = Net_Gearman_Connection::read($socket);
+                socket_clear_error($conn->socket);
+                $resp = $conn->read();
                 if (count($resp)) {
-                    $this->handleResponse($resp, $socket, $set);
+                    $this->handleResponse($resp, $conn, $set);
                 }
             }
 
@@ -312,7 +345,7 @@ class Net_Gearman_Client
      * @return void
      * @throws Net_Gearman_Exception
      */
-    protected function handleResponse($resp, $s, Net_Gearman_Set $tasks)
+    protected function handleResponse($resp, $conn, Net_Gearman_Set $tasks)
     {
         if (isset($resp['data']['handle']) &&
             $resp['function'] != 'job_created') {
@@ -334,7 +367,7 @@ class Net_Gearman_Client
             $task->fail();
             break;
         case 'job_created':
-            $task         = array_shift(Net_Gearman_Connection::$waiting[(int)$s]);
+            $task         = $conn->getWaitingTask();
             $task->handle = $resp['data']['handle'];
             if ($task->type == Net_Gearman_Task::JOB_BACKGROUND) {
                 $task->finished = true;
@@ -362,7 +395,9 @@ class Net_Gearman_Client
         }
 
         foreach ($this->conn as $conn) {
-            Net_Gearman_Connection::close($conn);
+            if (is_callable(array($conn, "close"))){
+                $conn->close();
+            }
         }
     }
 
@@ -391,7 +426,7 @@ class Net_Gearman_Client
 
         $key = md5(json_encode($servers));
 
-        if (!isset($instances[$key])) {
+        if (!isset($instances[$key])){
             $instances[$key] = new Net_Gearman_Client($servers, $timeout);
         }
 
