@@ -250,22 +250,17 @@ class Net_Gearman_Worker
 
             $this->conn[$server] = new Net_Gearman_Connection($server);
 
-            list($host, $port) = explode(":", $server);
-
             $this->conn[$server]->send("set_client_id", array("client_id" => $this->id));
 
             $this->addAbilities($this->conn[$server]);
 
             if (isset($this->retryConn[$server])) {
                 unset($this->retryConn[$server]);
-                list($host, $port) = explode(":", $server);
             }
 
             $success = true;
 
         } catch (Net_Gearman_Exception $e) {
-
-            list($host, $port) = explode(":", $server);
 
             $this->sleepConnection($server);
 
@@ -294,8 +289,6 @@ class Net_Gearman_Worker
         } else {
             $this->failedConn[$server]++;
         }
-
-        list($host, $port) = explode(":", $server);
 
     }
 
@@ -428,8 +421,6 @@ class Net_Gearman_Worker
 
                 } catch (Net_Gearman_Exception $e) {
 
-                    list($host, $port) = explode(":", $server);
-
                     $this->sleepConnection($server);
                 }
 
@@ -457,7 +448,6 @@ class Net_Gearman_Worker
                     try {
                         $conn->send('pre_sleep');
                     } catch (Net_Gearman_Exception $e) {
-                        list($host, $port) = explode(":", $server);
                         $this->sleepConnection($server);
                     }
                 }
@@ -486,7 +476,6 @@ class Net_Gearman_Worker
                                 $errno = socket_last_error($conn->socket);
                                 if ($errno > 0){ // 0 means timeout which is normal
                                     $this->sleepConnection($server);
-                                    list($host, $port) = explode(":", $server);
                                 }
                             }
                         }
@@ -551,7 +540,6 @@ class Net_Gearman_Worker
                 }
 
                 if (($lastTry + $retryTime) < $now) {
-                    list($host, $port) = explode(":", $s);
                     /**
                      * If we reconnect to a server, don't sleep
                      */
@@ -598,7 +586,6 @@ class Net_Gearman_Worker
                     break;
                 }
             }
-            list($host, $port) = explode(":", $server);
             return false;
         }
 
