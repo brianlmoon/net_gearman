@@ -21,6 +21,7 @@
  * @link      http://www.danga.com/gearman/
  */
 
+
 /**
  * Base job class for all Gearman jobs
  *
@@ -64,7 +65,7 @@ abstract class Net_Gearman_Job_Common
      *
      * @return void
      */
-    public function __construct($conn, $handle, array $initParams=array())
+    public function __construct(Net_Gearman_Connection $conn, $handle, array $initParams=array())
     {
         $this->conn   = $conn;
         $this->handle = $handle;
@@ -92,7 +93,7 @@ abstract class Net_Gearman_Job_Common
      */
     public function status($numerator, $denominator)
     {
-        Net_Gearman_Connection::send($this->conn, 'work_status', array(
+        $this->conn->send('work_status', array(
             'handle' => $this->handle,
             'numerator' => $numerator,
             'denominator' => $denominator
@@ -117,7 +118,7 @@ abstract class Net_Gearman_Job_Common
     public function complete(array $result)
     {
 
-        Net_Gearman_Connection::send($this->conn, 'work_complete', array(
+        $this->conn->send('work_complete', array(
             'handle' => $this->handle,
             'result' => json_encode($result)
         ));
@@ -138,7 +139,7 @@ abstract class Net_Gearman_Job_Common
      */
     public function fail()
     {
-        Net_Gearman_Connection::send($this->conn, 'work_fail', array(
+        $this->conn->send('work_fail', array(
             'handle' => $this->handle
         ));
     }
