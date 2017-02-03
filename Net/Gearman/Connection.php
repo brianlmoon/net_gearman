@@ -21,8 +21,6 @@
  * @link      https://github.com/brianlmoon/net_gearman
  */
 
-require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Exception.php';
-
 /**
  * The base connection class
  *
@@ -149,7 +147,7 @@ class Net_Gearman_Connection
         /**
          * Translate $timeout in milliseconds to seconds and µ seconds
          */
-        if($timeout >= 1000){
+        if ($timeout >= 1000) {
             $ts_seconds = $timeout / 1000;
             $tv_sec = floor($ts_seconds);
             $tv_usec = ($ts_seconds - $tv_sec) * 1000000;
@@ -177,7 +175,7 @@ class Net_Gearman_Connection
 
         $elapsed = microtime(true) - $now;
 
-        if($socket_connected){
+        if ($socket_connected) {
             socket_set_nonblock($socket);
             socket_set_option($socket, SOL_SOCKET, SO_KEEPALIVE, 1);
             socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array("sec"=>$tv_sec, "usec" => $tv_usec));
@@ -358,7 +356,7 @@ class Net_Gearman_Connection
             @socket_select($read, $write, $except, $tv_sec, $tv_usec);
             $elapsed = (microtime(true) - $ts_start) * 1000;
 
-            if(rand(1,1000) == 1){
+            if (rand(1,1000) == 1) {
                 socket_getpeername($socket, $addr);
             }
 

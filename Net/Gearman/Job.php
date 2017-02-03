@@ -21,9 +21,6 @@
  * @link      https://github.com/brianlmoon/net_gearman
  */
 
-require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Job' . DIRECTORY_SEPARATOR . 'Common.php';
-require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Exception.php';
-
 // Define this if you want your Jobs to be stored in a different
 // path than the default.
 if (!defined('NET_GEARMAN_JOB_PATH')) {

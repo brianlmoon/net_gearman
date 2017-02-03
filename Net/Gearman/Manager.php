@@ -20,8 +20,6 @@
  * @link      https://github.com/brianlmoon/net_gearman
  */
 
-require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Connection.php';
-
 /**
  * A client for managing Gearmand servers
  *

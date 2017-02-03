@@ -21,8 +21,6 @@
  * @link      http://www.danga.com/gearman/
  */
 
-require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Exception.php'; // Net_Gearman_Job_Exception
-
 /**
  * Base job class for all Gearman jobs
  *
