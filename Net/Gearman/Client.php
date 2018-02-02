@@ -324,6 +324,37 @@ class Net_Gearman_Client
     }
 
     /**
+     * Get the status of a task.
+     *
+     * @param $handle string The task handle returned when the task is submitted.
+     * @return array|false Information about the task.
+     */
+    public function getStatus($handle)
+    {
+        $conn = $this->getConnection();
+
+        $conn->send('get_status', compact('handle'));
+
+        $read = $write = $except = [];
+
+        foreach ($this->conn as $conn) {
+            $read[] = $conn->socket;
+        }
+
+        socket_select($read, $write, $except, 10);
+
+        foreach ($this->conn as $conn) {
+            $resp = $conn->read();
+
+            if (isset($resp['function'], $resp['data']) && ($resp['function'] == 'status_res')) {
+                return $resp['data'];
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Handle the response read in
      *
      * @param array    $resp  The raw array response
