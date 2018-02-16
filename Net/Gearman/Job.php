@@ -64,7 +64,17 @@ abstract class Net_Gearman_Job
     static public function factory($job, $conn, $handle, $initParams=array())
     {
         if (empty($initParams['path'])) {
-            $file = NET_GEARMAN_JOB_PATH . '/' . $job . '.php';
+            $paths = explode(',', NET_GEARMAN_JOB_PATH);
+            $file = null;
+
+            foreach ($paths as $path) {
+                $tmpFile = $path . '/' . $job . '.php';
+
+                if (file_exists(realpath($tmpFile))) {
+                    $file = $tmpFile;
+                    break;
+                }
+            }
         }
         else {
             $file = $initParams['path'];
