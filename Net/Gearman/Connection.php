@@ -149,9 +149,6 @@ class Net_Gearman_Connection
             $port  = 4730;
         }
 
-        $timeout_sec = $timeout / 1000;
-
-
         $this->socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
         /**
@@ -168,6 +165,7 @@ class Net_Gearman_Connection
         socket_set_block($this->socket);
 
         $now = microtime(true);
+        $waitUntil = $now + $timeout / 1000;
 
         /**
          * Loop calling socket_connect. As long as the error is 115 (in progress)
@@ -180,7 +178,7 @@ class Net_Gearman_Connection
             $socket_connected = @socket_connect($this->socket, $host, $port);
             $err = @socket_last_error($this->socket);
         }
-        while (($err === 115 || $err === 114) && ((microtime(true) - $now) < $timeout_sec));
+        while (($err === 115 || $err === 114) && (microtime(true) < $waitUntil));
 
         $elapsed = microtime(true) - $now;
 
@@ -199,16 +197,9 @@ class Net_Gearman_Connection
             /**
              * set the real send/receive timeouts here now that we are connected
              */
-            if ($timeout >= 1000) {
-                $ts_seconds = $timeout / 1000;
-                $tv_sec = floor($ts_seconds);
-                $tv_usec = ($ts_seconds - $tv_sec) * 1000000;
-            } else {
-                $tv_sec = 0;
-                $tv_usec = $timeout * 1000;
-            }
-            socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, array("sec"=>$tv_sec, "usec" => $tv_usec));
-            socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, array("sec"=>$tv_sec, "usec" => $tv_usec));
+            $timeout = self::calculateTimeout($timeout);
+            socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, array("sec"=>$timeout[0], "usec" => $timeout[1]));
+            socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, array("sec"=>$timeout[0], "usec" => $timeout[1]));
 
             // socket_set_option($this->socket, SOL_TCP, SO_DEBUG, 1); // Debug
 
@@ -378,26 +369,16 @@ class Net_Gearman_Connection
      * @throws Net_Gearman_Exception on timeouts
      * @return array
      */
-    public function blockingRead($timeout = 1000)
+    public function blockingRead($timeout = 250)
     {
-        $cmds = array();
-
-        if ($timeout >= 1000) {
-            $ts_seconds = $timeout / 1000;
-            $tv_sec = floor($ts_seconds);
-            $tv_usec = ($ts_seconds - $tv_sec) * 1000000;
-        } else {
-            $tv_sec = 0;
-            $tv_usec = $timeout * 1000;
-        }
-
         $write  = null;
         $except = null;
         $read   = array($this->socket);
 
-        $start = microtime(true);
-        $success = @socket_select($read, $write, $except, $tv_sec, $tv_usec);
-        $et = (microtime(true) - $start) * 1000;
+        $timeout = self::calculateTimeout($timeout);
+
+        socket_clear_error($this->socket);
+        $success = @socket_select($read, $write, $except, $timeout[0], $timeout[1]);
         if ($success === false) {
             $errno = @socket_last_error($this->socket);
             if ($errno != 0) {
@@ -410,13 +391,9 @@ class Net_Gearman_Connection
             throw new Net_Gearman_Exception("Socket timeout ($et): ($errno) ".socket_strerror($errno));
         }
 
-        if (count($read)) {
-            foreach ($read as $s) {
-                $cmds[] = $this->read();
-            }
-        }
+        $cmd = $this->read();
 
-        return array_shift($cmds);
+        return $cmd;
     }
 
     /**
@@ -428,26 +405,62 @@ class Net_Gearman_Connection
     {
         if (isset($this->socket) && is_resource($this->socket)) {
 
+            socket_clear_error($this->socket);
+
             socket_set_block($this->socket);
+
+            socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, array("sec"=>0, "usec" => 500));
+            socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, array("sec"=>0, "usec" => 500));
+
+            @socket_shutdown($this->socket);
+
+            $err = socket_last_error($this->socket);
+            if ($err != 0) {
+                if ($err == 107) {
+                    // 107 means Transport endpoint is not connected
+                    unset($this->socket);
+                    return;
+                }
+                throw new Net_Gearman_Exception("Socket error: ($errno) ".socket_strerror($err));
+            }
 
             /**
              * Read anything left on the buffer that we didn't get
              * due to a timeout or something
              */
             do {
-                $buf = @socket_read($this->socket, 8192);
-            } while (strlen($buf) > 0);
+                $err = 0;
+                $buf = "";
+                socket_clear_error($this->socket);
+                socket_close($this->socket);
+                if (isset($this->socket) && is_resource($this->socket)) {
+                    $err = socket_last_error($this->socket);
+                    // Check for EAGAIN error
+                    // 11 on Linux
+                    // 35 on BSD
+                    if ($err == 11 || $err == 35) {
+                        $buf = @socket_read($this->socket, 8192);
+                        $err = socket_last_error($this->socket);
+                    } else {
+                        // Some other error was returned. We need to
+                        // terminate the socket and get out. To do this,
+                        // we set SO_LINGER to {on, 0} which causes
+                        // the connection to be aborted.
+                        socket_set_option(
+                            $this->socket,
+                            SOL_SOCKET,
+                            SO_LINGER,
+                            array(
+                                'l_onoff' => 1,
+                                'l_linger' => 0
+                            )
+                        );
+                        socket_close($this->socket);
+                        $err = 0;
+                    }
+                }
+            } while ($err != 0 && strlen($buf) > 0);
 
-            socket_set_option(
-                $this->socket,
-                SOL_SOCKET,
-                SO_LINGER,
-                array(
-                    'l_onoff' => 1,
-                    'l_linger' => 1
-                )
-            );
-            socket_close($this->socket);
             unset($this->socket);
         }
     }
@@ -466,6 +479,26 @@ class Net_Gearman_Connection
         return (is_null($this->socket) !== true &&
                 is_resource($this->socket) === true &&
                 ($type == 'socket' || $type == "stream"));
+    }
+
+    /**
+     * Calculates the timeout values for socket_select
+     *
+     * @param  int $milliseconds Timeout in milliseconds
+     * @return array The first value is the seconds and the second value
+     *               is microseconds
+     */
+    public static function calculateTimeout($milliseconds)
+    {
+        if ($milliseconds >= 1000) {
+            $ts_seconds = $milliseconds / 1000;
+            $tv_sec = floor($ts_seconds);
+            $tv_usec = ($ts_seconds - $tv_sec) * 1000000;
+        } else {
+            $tv_sec = 0;
+            $tv_usec = $milliseconds * 1000;
+        }
+        return [$tv_sec, $tv_usec];
     }
 
     /**
