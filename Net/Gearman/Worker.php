@@ -565,7 +565,7 @@ class Net_Gearman_Worker
      *
      * @return bool True if any work was done, false if not
      */
-    protected function askForWork($monitor, $lastJobTime)
+    protected function askForWork($monitor = null, $lastJobTime = null)
     {
 
         $workDone = false;
@@ -613,7 +613,7 @@ class Net_Gearman_Worker
                 $this->sleepConnection($server);
             }
 
-            if (call_user_func($monitor, true, $lastJobTime)) {
+            if ($monitor && call_user_func($monitor, true, $lastJobTime)) {
                 break;
             }
         }
