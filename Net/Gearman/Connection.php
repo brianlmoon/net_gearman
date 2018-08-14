@@ -388,7 +388,7 @@ class Net_Gearman_Connection
 
         if ($success === 0) {
             $errno = @socket_last_error($this->socket);
-            throw new Net_Gearman_Exception("Socket timeout ($et): ($errno) ".socket_strerror($errno));
+            throw new Net_Gearman_Exception("Socket timeout ($timeout): ($errno) ".socket_strerror($errno));
         }
 
         $cmd = $this->read();
