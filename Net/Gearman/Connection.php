@@ -421,7 +421,7 @@ class Net_Gearman_Connection
                     unset($this->socket);
                     return;
                 }
-                throw new Net_Gearman_Exception("Socket error: ($errno) ".socket_strerror($err));
+                throw new Net_Gearman_Exception("Socket error: ($err) ".socket_strerror($err));
             }
 
             /**

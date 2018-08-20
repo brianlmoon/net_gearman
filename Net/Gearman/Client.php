@@ -307,7 +307,8 @@ class Net_Gearman_Client
             foreach ($this->conn as $conn) {
                 $err = socket_last_error($conn->socket);
                 // Error 11 is EAGAIN and is normal in non-blocking mode
-                if ($err && $err != 11) {
+                // Error 35 happens on macOS often enough to be annoying
+                if ($err && $err != 11 && $err != 35) {
                     $msg = socket_strerror($err);
                     socket_getpeername($conn->socket, $remote_address, $remote_port);
                     socket_getsockname($conn->socket, $local_address, $local_port);
