@@ -252,6 +252,10 @@ class Net_Gearman_Connection
             throw new Net_Gearman_Exception('Invalid command: ' . $command);
         }
 
+        if (!$this->isConnected()) {
+            $this->connect();
+        }
+
         $data = array();
         foreach ($this->commands[$command][1] as $field) {
             if (isset($params[$field])) {
@@ -308,6 +312,10 @@ class Net_Gearman_Connection
      */
     public function read()
     {
+        if (!$this->isConnected()) {
+            $this->connect();
+        }
+
         $header = '';
         do {
             $buf = @socket_read($this->socket, 12 - $this->stringLength($header));
@@ -371,6 +379,10 @@ class Net_Gearman_Connection
      */
     public function blockingRead($timeout = 250)
     {
+        if (!$this->isConnected()) {
+            $this->connect();
+        }
+
         $write  = null;
         $except = null;
         $read   = array($this->socket);
