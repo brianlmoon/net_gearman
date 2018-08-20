@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="./tests/bootstrap.php"
+         colors="true">
+    <testsuites>
+        <testsuite name="Main">
+            <directory suffix="Test.php">./tests</directory>
+        </testsuite>
+    </testsuites>
+    <groups>
+        <exclude>
+            <group>functional</group>
+        </exclude>
+    </groups>
+    <filter>
+        <whitelist>
+            <directory>./Net</directory>
+        </whitelist>
+    </filter>
+</phpunit>
