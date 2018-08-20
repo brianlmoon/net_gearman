@@ -1,19 +1,10 @@
 <?php
+
 /**
  * Net_Gearman_ConnectionTest
- *
- * PHP version 5
- *
- * @category   Testing
- * @package    Net_Gearman
- * @subpackage Net_Gearman_Connection
- * @author     Till Klampaeckel <till@php.net>
- * @license    http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @version    CVS: $Id$
- * @link       http://pear.php.net/package/Net_Gearman
- * @since      0.2.4
+ * @group functional
  */
-class Net_Gearman_ConnectionTest extends PHPUnit_Framework_TestCase
+class Net_Gearman_ConnectionTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * When no server is supplied, it should connect to localhost:4730.
@@ -22,13 +13,14 @@ class Net_Gearman_ConnectionTest extends PHPUnit_Framework_TestCase
      */
     public function testDefaultConnect()
     {
-        $connection = Net_Gearman_Connection::connect();
+
+        $connection = new Net_Gearman_Connection();
         $this->assertType('resource', $connection);
-        $this->assertEquals('socket', strtolower(get_resource_type($connection)));
+        $this->assertEquals('socket', strtolower(get_resource_type($connection->socket)));
 
-        $this->assertTrue(Net_Gearman_Connection::isConnected($connection));
+        $this->assertTrue($connection->isConnected());
 
-        Net_Gearman_Connection::close($connection);
+        $connection->close();
     }
 
     /**
@@ -38,14 +30,14 @@ class Net_Gearman_ConnectionTest extends PHPUnit_Framework_TestCase
      */
     public function testSend()
     {
-        $connection = Net_Gearman_Connection::connect();
-        Net_Gearman_Connection::send($connection, 'echo_req', array('text' => 'foobar'));
+        $connection = new Net_Gearman_Connection();
+        $connection->send('echo_req', array('text' => 'foobar'));
 
         do {
-            $ret = Net_Gearman_Connection::read($connection);
+            $ret = $connection->read();
         } while (is_array($ret) && !count($ret));
 
-        Net_Gearman_Connection::close($connection);
+        $connection->close();
 
         $this->assertType('array', $ret);
         $this->assertEquals('echo_res', $ret['function']);
