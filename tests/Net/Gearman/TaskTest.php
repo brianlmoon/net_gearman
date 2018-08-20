@@ -1,19 +1,8 @@
 <?php
 /**
  * Net_Gearman_ConnectionTest
- *
- * PHP version 5
- *
- * @category   Testing
- * @package    Net_Gearman
- * @subpackage Net_Gearman_Task
- * @author     Till Klampaeckel <till@php.net>
- * @license    http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @version    CVS: $Id$
- * @link       http://pear.php.net/package/Net_Gearman
- * @since      0.2.4
  */
-class Net_Gearman_TaskTest extends PHPUnit_Framework_TestCase
+class Net_Gearman_TaskTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * Unknown job type.
@@ -38,7 +27,7 @@ class Net_Gearman_TaskTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals('foo', $task->func);
         $this->assertEquals(array('bar'), $task->arg);
-        $this->assertEquals($uniq, $task->uniq);        
+        $this->assertEquals($uniq, $task->uniq);
     }
 
     /**
@@ -56,7 +45,7 @@ class Net_Gearman_TaskTest extends PHPUnit_Framework_TestCase
     public function testAttachInvalidCallbackType()
     {
         $task = new Net_Gearman_Task('foo', array());
-        $this->assertType('Net_Gearman_Task', $task->attachCallback('strlen', 666));
+        $this->assertInstanceOf('Net_Gearman_Task', $task->attachCallback('strlen', 666));
     }
 
     public static function callbackProvider()
@@ -112,20 +101,21 @@ class Net_Gearman_TaskTest extends PHPUnit_Framework_TestCase
     /**
      * See that task has handle and server assigned.
      *
+     * @group functional
      * @return void
      */
     public function testTaskStatus()
     {
-        $client = new Net_Gearman_Client();
- 
+        $client = new Net_Gearman_Client(["127.0.0.1:4730"]);
+
         $task       = new Net_Gearman_Task('Reverse', range(1,5));
         $task->type = Net_Gearman_Task::JOB_BACKGROUND;
- 
+
         $set = new Net_Gearman_Set();
         $set->addTask($task);
- 
+
         $client->runSet($set);
- 
+
         $this->assertNotEquals('', $task->handle);
         $this->assertNotEquals('', $task->server);
     }

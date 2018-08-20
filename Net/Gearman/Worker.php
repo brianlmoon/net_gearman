@@ -751,7 +751,7 @@ class Net_Gearman_Worker
             $this->complete($handle, $name, $res);
         } catch (Net_Gearman_Job_Exception $e) {
             // If the factory method call fails, we won't have a job.
-            if (isset($job) && $job instanceof Net_Gearman_Job) {
+            if (isset($job) && $job instanceof Net_Gearman_Job_Common) {
                 $job->fail();
             }
 
