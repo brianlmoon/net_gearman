@@ -389,7 +389,7 @@ class Net_Gearman_Connection
         if ($success === 0) {
             $errno = @socket_last_error($this->socket);
             throw new Net_Gearman_Exception(
-                sprintf("Socket timeout (%.4fs, %.4fμs): (%s) ", $timeout[0], $timeout[1], socket_strerror($errno))
+                sprintf("Socket timeout (%.4fs, %.4fμs): (%s)", $timeout[0], $timeout[1], socket_strerror($errno))
             );
         }
 
