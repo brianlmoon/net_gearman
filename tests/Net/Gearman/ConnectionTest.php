@@ -16,7 +16,13 @@ class Net_Gearman_ConnectionTest extends \PHPUnit\Framework\TestCase
 
         $connection = new Net_Gearman_Connection();
         $this->assertType('resource', $connection);
-        $this->assertEquals('socket', strtolower(get_resource_type($connection->socket)));
+        if (version_compare($var, '8.0.0') >= 0) {
+            // PHP 8+ returns a Socket class instead of a resource now
+            $this->assertInstanceOf('Socket', $connections->socket);
+        }
+        else {
+            $this->assertEquals('socket', strtolower(get_resource_type($connection->socket)));
+        }
 
         $this->assertTrue($connection->isConnected());
 
