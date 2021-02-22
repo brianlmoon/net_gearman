@@ -15,7 +15,7 @@
         "issues": "https://github.com/brianlmoon/net_gearman/issues"
     },
     "require": {
-        "php": "^7.0.0|^8.0.0"
+        "php": "^7.0.0 || ^8.0.0"
     },
     "autoload": {
         "classmap": [ "Net/Gearman" ]
