@@ -476,6 +476,11 @@ class Net_Gearman_Connection
      */
     public function isConnected()
     {
+        // PHP 8+ returns Socket class instead of resource
+        if ($this->socket instanceof Socket) {
+            return true;
+        }
+        
         // HHVM returns stream. PHP 5.x returns socket
         $type = strtolower(get_resource_type($this->socket));
         return (is_null($this->socket) !== true &&
