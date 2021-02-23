@@ -154,7 +154,7 @@ class Net_Gearman_Connection
         /**
          * Set the send and receive timeouts super low so that socket_connect
          * will return to us quickly. We then loop and check the real timeout
-         * and check the socket error to decide if its conected yet or not.
+         * and check the socket error to decide if its connected yet or not.
          */
         socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, array("sec"=>0, "usec" => 100));
         socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, array("sec"=>0, "usec" => 100));
@@ -482,7 +482,7 @@ class Net_Gearman_Connection
         }
 
         // PHP 8+ returns Socket object instead of resource
-        if ($this->socket instanceof Socket) {
+        if ($this->socket instanceof \Socket) {
             return true;
         }
 
