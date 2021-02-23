@@ -487,7 +487,7 @@ class Net_Gearman_Connection
         }
 
         // HHVM returns stream. PHP 5.x returns socket
-        $type = mb_strtolower(get_resource_type($this->socket));
+        $type = strtolower(get_resource_type($this->socket));
 
         return is_resource($this->socket) === true
             && ($type == 'socket' || $type == 'stream');
