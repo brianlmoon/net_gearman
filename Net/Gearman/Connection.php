@@ -476,15 +476,15 @@ class Net_Gearman_Connection
      */
     public function isConnected()
     {
+        // PHP 8+ returns Socket object instead of resource
+        if ($this->socket instanceof \Socket) {
+            return true;
+        }
+
         // PHP 5.x-7.x returns socket
         if (is_resource($this->socket) === true) {
             $type = strtolower(get_resource_type($this->socket));
             return $type === 'socket';
-        }
-
-        // PHP 8+ returns Socket object instead of resource
-        if ($this->socket instanceof \Socket) {
-            return true;
         }
 
         return false;
