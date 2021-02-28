@@ -486,11 +486,13 @@ class Net_Gearman_Connection
             return true;
         }
 
-        // HHVM returns stream. PHP 5.x returns socket
-        $type = strtolower(get_resource_type($this->socket));
+        // PHP 5.x-7.x returns socket
+        if (is_resource($this->socket) === true) {
+            $type = strtolower(get_resource_type($this->socket));
+            return $type === 'socket';
+        }
 
-        return is_resource($this->socket) === true
-            && ($type == 'socket' || $type == 'stream');
+        return false;
     }
 
     /**
