@@ -107,6 +107,13 @@ class Net_Gearman_Connection
 
     public $socket;
 
+    /**
+     * Gearmand Server Version
+     *
+     * @var        string
+     */
+    protected $serverVersion;
+
     public function __construct($host=null, $timeout=250) {
         if ($host) {
             $this->connect($host, $timeout);
@@ -123,8 +130,8 @@ class Net_Gearman_Connection
      * Opens the socket to the Gearman Job server. It throws an exception if
      * a socket error occurs. Also populates Net_Gearman_Connection::$magic.
      *
-     * @param string $host    e.g. 127.0.0.1 or 127.0.0.1:7003
-     * @param int    $timeout Timeout in milliseconds
+     * @param string              $host    e.g. 127.0.0.1 or 127.0.0.1:7003
+     * @param int                 $timeout Timeout in milliseconds
      *
      * @return resource A connection to a Gearman server
      * @throws Net_Gearman_Exception when it can't connect to server
@@ -203,6 +210,8 @@ class Net_Gearman_Connection
 
             // socket_set_option($this->socket, SOL_TCP, SO_DEBUG, 1); // Debug
 
+            $this->setServerVersion($host);
+
          } else {
 
             $errno = @socket_last_error($this->socket);
@@ -257,6 +266,10 @@ class Net_Gearman_Connection
             if (isset($params[$field])) {
                 $data[] = $params[$field];
             }
+        }
+
+        if ($command === 'can_do_timeout') {
+            $params = $this->fixTimeout($params);
         }
 
         $d = implode("\x00", $data);
@@ -554,5 +567,31 @@ class Net_Gearman_Connection
         } else {
             return substr($str, $start, $length);
         }
+    }
+
+    /**
+     * Sets the server version.
+     *
+     * @param string              $host     The host
+     * @param Net_Gearman_Manager $manager Optional manager object
+     */
+    protected function setServerVersion($host, $manager = null)
+    {
+        if (empty($manager)) {
+            $manager = new \Net_Gearman_Manager($host);
+        }
+        $this->serverVersion = $manager->version();
+        unset($manager);
+    }
+
+    protected function fixTimeout($params) {
+        // In gearmand version 1.1.19 and greater, the timeout is
+        // expected to be in milliseconds. Before that version, it
+        // is expected to be in seconds.
+        // https://github.com/gearman/gearmand/issues/196
+        if (version_compare('1.1.18', $this->serverVersion)) {
+            $params['timeout'] *= 1000;
+        }
+        return $params;
     }
 }
