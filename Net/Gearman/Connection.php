@@ -161,7 +161,7 @@ class Net_Gearman_Connection
         /**
          * Set the send and receive timeouts super low so that socket_connect
          * will return to us quickly. We then loop and check the real timeout
-         * and check the socket error to decide if its conected yet or not.
+         * and check the socket error to decide if its connected yet or not.
          */
         socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, array("sec"=>0, "usec" => 100));
         socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, array("sec"=>0, "usec" => 100));
@@ -489,11 +489,18 @@ class Net_Gearman_Connection
      */
     public function isConnected()
     {
-        // HHVM returns stream. PHP 5.x returns socket
-        $type = strtolower(get_resource_type($this->socket));
-        return (is_null($this->socket) !== true &&
-                is_resource($this->socket) === true &&
-                ($type == 'socket' || $type == "stream"));
+        // PHP 8+ returns Socket object instead of resource
+        if ($this->socket instanceof \Socket) {
+            return true;
+        }
+
+        // PHP 5.x-7.x returns socket
+        if (is_resource($this->socket) === true) {
+            $type = strtolower(get_resource_type($this->socket));
+            return $type === 'socket';
+        }
+
+        return false;
     }
 
     /**

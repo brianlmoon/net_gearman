@@ -6,3 +6,4 @@ tests/run-tests.log
 # Dependencies
 vendor
 composer.lock
+.phpunit.result.cache

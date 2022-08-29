@@ -1,6 +1,6 @@
 <?php
 /**
- * Net_Gearman_ConnectionTest
+ * Net_Gearman_TaskTest.
  */
 class Net_Gearman_TaskTest extends \PHPUnit\Framework\TestCase
 {
@@ -8,11 +8,11 @@ class Net_Gearman_TaskTest extends \PHPUnit\Framework\TestCase
      * Unknown job type.
      *
      * @return void
-     * @expectedException Net_Gearman_Exception
+     * @expectedException \Net_Gearman_Exception
      */
     public function testExceptionFromConstruct()
     {
-        new Net_Gearman_Task('foo', array(), null, 8);
+        new Net_Gearman_Task('foo', [], null, 8);
     }
 
     /**
@@ -23,38 +23,38 @@ class Net_Gearman_TaskTest extends \PHPUnit\Framework\TestCase
     public function testParameters()
     {
         $uniq = uniqid();
-        $task = new Net_Gearman_Task('foo', array('bar'), $uniq, 1);
+        $task = new Net_Gearman_Task('foo', ['bar'], $uniq, 1);
 
         $this->assertEquals('foo', $task->func);
-        $this->assertEquals(array('bar'), $task->arg);
+        $this->assertEquals(['bar'], $task->arg);
         $this->assertEquals($uniq, $task->uniq);
     }
 
     /**
-     * @expectedException Net_Gearman_Exception
+     * @expectedException \Net_Gearman_Exception
      */
     public function testAttachInvalidCallback()
     {
-        $task = new Net_Gearman_Task('foo', array());
+        $task = new Net_Gearman_Task('foo', []);
         $task->attachCallback('func_bar');
     }
 
     /**
-     * @expectedException Net_Gearman_Exception
+     * @expectedException \Net_Gearman_Exception
      */
     public function testAttachInvalidCallbackType()
     {
-        $task = new Net_Gearman_Task('foo', array());
+        $task = new Net_Gearman_Task('foo', []);
         $this->assertInstanceOf('Net_Gearman_Task', $task->attachCallback('strlen', 666));
     }
 
     public static function callbackProvider()
     {
-        return array(
-            array('strlen',  Net_Gearman_Task::TASK_FAIL),
-            array('intval',  Net_Gearman_Task::TASK_COMPLETE),
-            array('explode', Net_Gearman_Task::TASK_STATUS),
-        );
+        return [
+            ['strlen',  Net_Gearman_Task::TASK_FAIL],
+            ['intval',  Net_Gearman_Task::TASK_COMPLETE],
+            ['explode', Net_Gearman_Task::TASK_STATUS],
+        ];
     }
 
     /**
@@ -62,7 +62,7 @@ class Net_Gearman_TaskTest extends \PHPUnit\Framework\TestCase
      */
     public function testAttachCallback($func, $type)
     {
-        $task = new Net_Gearman_Task('foo', array());
+        $task = new Net_Gearman_Task('foo', []);
         $task->attachCallback($func, $type);
 
         $callbacks = $task->getCallbacks();
@@ -77,7 +77,7 @@ class Net_Gearman_TaskTest extends \PHPUnit\Framework\TestCase
      */
     public function testCompleteCallback()
     {
-        $task = new Net_Gearman_Task('foo', array('foo' => 'bar'));
+        $task = new Net_Gearman_Task('foo', ['foo' => 'bar']);
 
         $this->assertEquals(null, $task->complete('foo'));
 
@@ -91,7 +91,7 @@ class Net_Gearman_TaskTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($json, $task->result);
 
         $this->assertEquals(
-            array('func' => 'foo', 'handle' => '', 'result' => $json),
+            ['func' => 'foo', 'handle' => '', 'result' => $json],
             $GLOBALS['Net_Gearman_TaskTest']
         );
 
@@ -102,13 +102,14 @@ class Net_Gearman_TaskTest extends \PHPUnit\Framework\TestCase
      * See that task has handle and server assigned.
      *
      * @group functional
+     *
      * @return void
      */
     public function testTaskStatus()
     {
-        $client = new Net_Gearman_Client(["127.0.0.1:4730"]);
+        $client = new Net_Gearman_Client([NET_GEARMAN_TEST_SERVER]);
 
-        $task       = new Net_Gearman_Task('Reverse', range(1,5));
+        $task = new Net_Gearman_Task('Reverse', range(1, 5));
         $task->type = Net_Gearman_Task::JOB_BACKGROUND;
 
         $set = new Net_Gearman_Set();
@@ -117,7 +118,6 @@ class Net_Gearman_TaskTest extends \PHPUnit\Framework\TestCase
         $client->runSet($set);
 
         $this->assertNotEquals('', $task->handle);
-        $this->assertNotEquals('', $task->server);
     }
 }
 
@@ -132,9 +132,9 @@ class Net_Gearman_TaskTest extends \PHPUnit\Framework\TestCase
  */
 function Net_Gearman_TaskTest_testCallBack($func, $handle, $result)
 {
-    $GLOBALS['Net_Gearman_TaskTest'] = array(
-        'func'   => $func,
+    $GLOBALS['Net_Gearman_TaskTest'] = [
+        'func' => $func,
         'handle' => $handle,
-        'result' => $result
-    );
+        'result' => $result,
+    ];
 }
