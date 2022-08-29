@@ -261,6 +261,12 @@ class Net_Gearman_Connection
             throw new Net_Gearman_Exception('Invalid command: ' . $command);
         }
 
+        if (!$this->isConnected()) {
+            throw new Net_Gearman_Exception(
+                "Can't connect to server"
+            );
+        }
+
         $data = array();
         foreach ($this->commands[$command][1] as $field) {
             if (isset($params[$field])) {
@@ -276,9 +282,9 @@ class Net_Gearman_Connection
 
         $cmd = "\0REQ" . pack("NN",
                               $this->commands[$command][0],
-                              $this->stringLength($d)) . $d;
+                              self::stringLength($d)) . $d;
 
-        $cmdLength = $this->stringLength($cmd);
+        $cmdLength = self::stringLength($cmd);
         $written = 0;
         $error = false;
         do {
@@ -321,18 +327,24 @@ class Net_Gearman_Connection
      */
     public function read()
     {
+        if (!$this->isConnected()) {
+            throw new Net_Gearman_Exception(
+                "Can't connect to server"
+            );
+        }
+
         $header = '';
         do {
-            $buf = @socket_read($this->socket, 12 - $this->stringLength($header));
+            $buf = @socket_read($this->socket, 12 - self::stringLength($header));
             $header .= $buf;
         } while ($buf !== false &&
-                 $buf !== '' && $this->stringLength($header) < 12);
+                 $buf !== '' && self::stringLength($header) < 12);
 
         if ($buf === '') {
             throw new Net_Gearman_Exception("Connection was reset");
         }
 
-        if ($this->stringLength($header) == 0) {
+        if (self::stringLength($header) == 0) {
             return array();
         }
         $resp = @unpack('a4magic/Ntype/Nlen', $header);
@@ -350,8 +362,8 @@ class Net_Gearman_Connection
         $return = array();
         if ($resp['len'] > 0) {
             $data = '';
-            while ($this->stringLength($data) < $resp['len']) {
-                $data .= @socket_read($this->socket, $resp['len'] - $this->stringLength($data));
+            while (self::stringLength($data) < $resp['len']) {
+                $data .= @socket_read($this->socket, $resp['len'] - self::stringLength($data));
             }
 
             $d = explode("\x00", $data);
@@ -362,7 +374,7 @@ class Net_Gearman_Connection
 
         $function = $this->magic[$resp['type']][0];
         if ($function == 'error') {
-            if (!$this->stringLength($return['err_text'])) {
+            if (!self::stringLength($return['err_text'])) {
                 $return['err_text'] = 'Unknown error; see error code.';
             }
 
@@ -384,6 +396,12 @@ class Net_Gearman_Connection
      */
     public function blockingRead($timeout = 250)
     {
+        if (!$this->isConnected()) {
+            throw new Net_Gearman_Exception(
+                "Can't connect to server"
+            );
+        }
+
         $write  = null;
         $except = null;
         $read   = array($this->socket);
@@ -474,7 +492,7 @@ class Net_Gearman_Connection
                         $err = 0;
                     }
                 }
-            } while ($err != 0 && strlen($buf) > 0);
+            } while ($err != 0 && self::stringLength($buf) > 0);
 
             unset($this->socket);
         }
@@ -489,18 +507,23 @@ class Net_Gearman_Connection
      */
     public function isConnected()
     {
-        // PHP 8+ returns Socket object instead of resource
-        if ($this->socket instanceof \Socket) {
-            return true;
+        $is_connected = false;
+
+        if ($this->socket !== null) {
+            if (class_exists(\Socket::class)) {
+                // PHP >= 8 sockets are an instance of \Socket
+                $is_connected = $this->socket instanceof \Socket;
+            } else {
+                // PHP < 8 sockets are resources and get_resource_type returns socket
+                $type = strtolower(get_resource_type($this->socket));
+                $is_connected = (
+                    is_resource($this->socket) === true &&
+                    $type === 'socket'
+                );
+            }
         }
 
-        // PHP 5.x-7.x returns socket
-        if (is_resource($this->socket) === true) {
-            $type = strtolower(get_resource_type($this->socket));
-            return $type === 'socket';
-        }
-
-        return false;
+        return $is_connected;
     }
 
     /**

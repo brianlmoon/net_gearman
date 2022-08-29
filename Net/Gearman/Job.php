@@ -63,6 +63,10 @@ abstract class Net_Gearman_Job
      */
     static public function factory($job, $conn, $handle, $initParams=array())
     {
+        if (empty($initParams)) {
+            $initParams = [];
+        }
+
         if (empty($initParams['path'])) {
             $paths = explode(',', NET_GEARMAN_JOB_PATH);
             $file = null;

@@ -48,3 +48,21 @@ $worker = new Net_Gearman_Worker('localhost');
 $worker->addAbility('Reverse_String');
 $worker->beginWork();
 ```
+
+## Development
+
+### Running Tests
+
+From the project root:
+
+#### Install
+1. composer install
+
+#### Run the unit tests
+1. vendor/bin/phpunit
+
+#### Run the functional tests
+1. Start up your gearman job server
+2. Copy phpunit.xml.dist to phpunit.xml
+3. Update the `NET_GEARMAN_TEST_SERVER` constant in `phpunit.xml` (if necessary)
+4. vendor/bin/phpunit --group functional

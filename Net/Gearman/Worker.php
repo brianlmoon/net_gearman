@@ -211,7 +211,7 @@ class Net_Gearman_Worker
      */
     public function __construct($servers, $id = "", $socket_timeout=null)
     {
-        if (!is_array($servers) && strlen($servers)) {
+        if (!is_array($servers) && Connection::stringLength($servers)) {
             $servers = array($servers);
         } elseif (is_array($servers) && !count($servers)) {
             throw new Net_Gearman_Exception('Invalid servers specified');
@@ -711,7 +711,7 @@ class Net_Gearman_Worker
                 "No job was returned from the server",
                 $server
             );
-
+            $this->sleepConnection($server);
             return false;
         }
 
@@ -736,6 +736,10 @@ class Net_Gearman_Worker
         }
 
         try {
+            if (empty($this->initParams[$name])) {
+                $this->initParams[$name] = [];
+            }
+
             $job = Net_Gearman_Job::factory(
                 $name, $conn, $handle, $this->initParams[$name]
             );
