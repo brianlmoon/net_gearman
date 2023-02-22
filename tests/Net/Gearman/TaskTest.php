@@ -8,10 +8,10 @@ class Net_Gearman_TaskTest extends \PHPUnit\Framework\TestCase
      * Unknown job type.
      *
      * @return void
-     * @expectedException \Net_Gearman_Exception
      */
     public function testExceptionFromConstruct()
     {
+        $this->expectException(\Net_Gearman_Exception::class);
         new Net_Gearman_Task('foo', [], null, 8);
     }
 
@@ -30,20 +30,16 @@ class Net_Gearman_TaskTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($uniq, $task->uniq);
     }
 
-    /**
-     * @expectedException \Net_Gearman_Exception
-     */
     public function testAttachInvalidCallback()
     {
+        $this->expectException(\Net_Gearman_Exception::class);
         $task = new Net_Gearman_Task('foo', []);
         $task->attachCallback('func_bar');
     }
 
-    /**
-     * @expectedException \Net_Gearman_Exception
-     */
     public function testAttachInvalidCallbackType()
     {
+        $this->expectException(\Net_Gearman_Exception::class);
         $task = new Net_Gearman_Task('foo', []);
         $this->assertInstanceOf('Net_Gearman_Task', $task->attachCallback('strlen', 666));
     }

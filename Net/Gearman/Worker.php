@@ -48,7 +48,7 @@
  *     exit;
  * }
  *
- * ?>
+ *
  * </code>
  *
  * @category  Net
@@ -707,6 +707,9 @@ class Net_Gearman_Worker
                     break;
                 }
             }
+
+            $this->sleepConnection($server);
+
             $this->status(
                 "No job was returned from the server",
                 $server
@@ -736,6 +739,11 @@ class Net_Gearman_Worker
         }
 
         try {
+
+            if (empty($this->initParams[$name])) {
+                $this->initParams[$name] = [];
+            }
+
             $job = Net_Gearman_Job::factory(
                 $name, $conn, $handle, $this->initParams[$name]
             );

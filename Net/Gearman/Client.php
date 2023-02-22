@@ -58,6 +58,13 @@ class Net_Gearman_Client
     protected $timeout = 1000;
 
     /**
+     * Callbacks array for receiving connection status
+     *
+     * @var array $callback
+     */
+    protected $callback = array();
+
+    /**
      * Constructor
      *
      * @param array   $servers An array of servers or a single server
@@ -71,7 +78,7 @@ class Net_Gearman_Client
      */
     public function __construct($servers, $timeout = 1000)
     {
-        if (!is_array($servers) && strlen($servers)) {
+        if (!is_array($servers) && strlen($servers) > 0) {
             $servers = array($servers);
         } elseif (is_array($servers) && !count($servers)) {
             throw new Net_Gearman_Exception('Invalid servers specified');
@@ -108,7 +115,7 @@ class Net_Gearman_Client
          */
         $tried_servers = array();
 
-        while ($conn === null && count($servers)) {
+        while ($conn === null && count($servers) > 0) {
             if (count($servers) === 1) {
                 $key = key($servers);
             } elseif ($uniq === null) {
@@ -121,10 +128,12 @@ class Net_Gearman_Client
 
             $tried_servers[] = $server;
 
-            if (empty($this->conn[$server])) {
-                $conn = null;
+            if (empty($this->conn[$server]) || !$this->conn[$server]->isConnected()) {
 
+                $conn  = null;
                 $start = microtime(true);
+                $e     = null;
+
                 try {
                     $conn = new Net_Gearman_Connection($server, $this->timeout);
                 } catch (Net_Gearman_Exception $e) {
@@ -139,6 +148,17 @@ class Net_Gearman_Client
                 } else {
                     $this->conn[$server] = $conn;
                     break;
+                }
+
+                foreach ($this->callback as $callback) {
+                    call_user_func(
+                        $callback,
+                        $server,
+                        $conn !== null,
+                        $this->timeout,
+                        microtime(true) - $start,
+                        $e
+                    );
                 }
 
             } else {
@@ -158,6 +178,22 @@ class Net_Gearman_Client
         }
 
         return $conn;
+    }
+
+    /**
+     * Attach a callback for connection status
+     *
+     * @param callback $callback A valid PHP callback
+     *
+     * @return void
+     * @throws Net_Gearman_Exception When an invalid callback is specified.
+     */
+    public function attachCallback($callback)
+    {
+        if (!is_callable($callback)) {
+            throw new Net_Gearman_Exception('Invalid callback specified');
+        }
+        $this->callback[] = $callback;
     }
 
     /**
@@ -297,22 +333,26 @@ class Net_Gearman_Client
                 $t++;
             }
 
-            $write  = null;
-            $except = null;
+            $write     = null;
+            $except    = null;
             $read_cons = array();
+
             foreach ($this->conn as $conn) {
                 $read_conns[] = $conn->socket;
             }
+
             @socket_select($read_conns, $write, $except, $socket_timeout);
-            foreach ($this->conn as $conn) {
+
+            $error_messages = [];
+
+            foreach ($this->conn as $server => $conn) {
                 $err = socket_last_error($conn->socket);
                 // Error 11 is EAGAIN and is normal in non-blocking mode
                 // Error 35 happens on macOS often enough to be annoying
                 if ($err && $err != 11 && $err != 35) {
                     $msg = socket_strerror($err);
-                    socket_getpeername($conn->socket, $remote_address, $remote_port);
-                    socket_getsockname($conn->socket, $local_address, $local_port);
-                    trigger_error("socket_select failed: ($err) $msg; server: $remote_address:$remote_port", E_USER_WARNING);
+                    list($remote_address, $remote_port) = explode(":", $server);
+                    $error_messages[] = "socket_select failed: ($err) $msg; server: $remote_address:$remote_port";
                 }
                 socket_clear_error($conn->socket);
                 $resp = $conn->read();
@@ -321,6 +361,10 @@ class Net_Gearman_Client
                 }
             }
 
+            // if all connections threw errors, throw an exception
+            if (count($error_messages) == count($this->conn)) {
+                throw new Net_Gearman_Exception(implode("; ", $error_messages));
+            }
         }
     }
 
@@ -388,6 +432,8 @@ class Net_Gearman_Client
                 $conn->close();
             }
         }
+
+        $this->conn = [];
     }
 
     /**
