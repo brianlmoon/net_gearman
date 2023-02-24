@@ -261,15 +261,15 @@ class Net_Gearman_Connection
             throw new Net_Gearman_Exception('Invalid command: ' . $command);
         }
 
+        if ($command === 'can_do_timeout') {
+            $params = $this->fixTimeout($params);
+        }
+
         $data = array();
         foreach ($this->commands[$command][1] as $field) {
             if (isset($params[$field])) {
                 $data[] = $params[$field];
             }
-        }
-
-        if ($command === 'can_do_timeout') {
-            $params = $this->fixTimeout($params);
         }
 
         $d = implode("\x00", $data);
