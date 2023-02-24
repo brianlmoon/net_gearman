@@ -275,6 +275,7 @@ class Net_Gearman_Worker
 
             if (isset($this->retryConn[$server])) {
                 unset($this->retryConn[$server]);
+                $this->status("Removing server from the retry list.", $server);
             }
 
             $this->status("Connected to $server", $server);
@@ -869,7 +870,7 @@ class Net_Gearman_Worker
 
         if (!empty($server)) {
             $failed_conns = isset($this->failedConn[$server]) ? $this->failedConn[$server] : 0;
-            $connected = isset($this->retryConn[$server]);
+            $connected = isset($this->conn[$server]) && $this->conn[$server]->isConnected();
         } else {
             $failed_conns = null;
             $connected = null;
