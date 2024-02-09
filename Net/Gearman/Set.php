@@ -194,6 +194,7 @@ class Net_Gearman_Set implements IteratorAggregate, Countable
      *
      * @return ArrayIterator Tasks
      */
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         return new ArrayIterator($this->tasks);
@@ -205,6 +206,7 @@ class Net_Gearman_Set implements IteratorAggregate, Countable
      * @return int Number of tasks in the set
      * @see    {@link Countable::count()}
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         return $this->tasksCount;
