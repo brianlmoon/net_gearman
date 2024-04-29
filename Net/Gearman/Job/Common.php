@@ -34,6 +34,7 @@
  * @link      http://www.danga.com/gearman/
  * @see       Net_Gearman_Job_Common, Net_Gearman_Worker
  */
+#[\AllowDynamicProperties]
 abstract class Net_Gearman_Job_Common
 {
     /**
