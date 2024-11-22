@@ -55,6 +55,7 @@ abstract class Net_Gearman_Job_Common
      * Parameters for Job instantiation
      * @var array $initParams
      */
+    protected $initParams;
 
     /**
      * Constructor
