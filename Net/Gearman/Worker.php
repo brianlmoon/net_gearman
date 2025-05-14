@@ -440,7 +440,7 @@ class Net_Gearman_Worker
             $this->retryConnections();
 
             if (!empty($this->conn)) {
-                $worked = $this->askForWork();
+                $worked = $this->askForWork($monitor);
 
                 if ($worked) {
                     $lastJobTime = time();
