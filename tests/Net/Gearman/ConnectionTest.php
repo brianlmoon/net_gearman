@@ -22,8 +22,8 @@ class Net_Gearman_ConnectionTest extends \PHPUnit\Framework\TestCase
         };
 
         $connection = new class extends Net_Gearman_Connection {
-            public function setServerVersion($host, $manager = null) {
-                parent::setServerVersion($host, $manager);
+            public function setServerVersion($server, $manager = null) {
+                parent::setServerVersion($server, $manager);
                 return $this->serverVersion;
             }
         };

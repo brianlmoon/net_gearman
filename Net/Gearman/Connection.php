@@ -114,9 +114,9 @@ class Net_Gearman_Connection
      */
     protected $serverVersion;
 
-    public function __construct($host=null, $timeout=250) {
-        if ($host) {
-            $this->connect($host, $timeout);
+    public function __construct($server=null, $timeout=250) {
+        if ($server) {
+            $this->connect($server, $timeout);
         }
     }
 
@@ -130,7 +130,7 @@ class Net_Gearman_Connection
      * Opens the socket to the Gearman Job server. It throws an exception if
      * a socket error occurs. Also populates Net_Gearman_Connection::$magic.
      *
-     * @param string              $host    e.g. 127.0.0.1 or 127.0.0.1:7003
+     * @param string              $server  e.g. 127.0.0.1 or 127.0.0.1:7003
      * @param int                 $timeout Timeout in milliseconds
      *
      * @return resource A connection to a Gearman server
@@ -139,7 +139,7 @@ class Net_Gearman_Connection
      * @see Net_Gearman_Connection::$magic
      * @see Net_Gearman_Connection::$commands
      */
-    public function connect($host, $timeout = 250)
+    public function connect($server, $timeout = 250)
     {
 
         $this->close();
@@ -150,9 +150,10 @@ class Net_Gearman_Connection
             }
         }
 
-        if (strpos($host, ':')) {
-            list($host, $port) = explode(':', $host);
+        if (strpos($server, ':')) {
+            list($host, $port) = explode(':', $server);
         } else {
+            $host = $server;
             $port  = 4730;
         }
 
@@ -210,7 +211,7 @@ class Net_Gearman_Connection
 
             // socket_set_option($this->socket, SOL_TCP, SO_DEBUG, 1); // Debug
 
-            $this->setServerVersion($host);
+            $this->setServerVersion($server);
 
          } else {
 
@@ -572,13 +573,13 @@ class Net_Gearman_Connection
     /**
      * Sets the server version.
      *
-     * @param string              $host     The host
+     * @param string              $server  The host:port
      * @param Net_Gearman_Manager $manager Optional manager object
      */
-    protected function setServerVersion($host, $manager = null)
+    protected function setServerVersion($server, $manager = null)
     {
         if (empty($manager)) {
-            $manager = new \Net_Gearman_Manager($host);
+            $manager = new \Net_Gearman_Manager($server);
         }
         $this->serverVersion = $manager->version();
         unset($manager);
